@@ -6,7 +6,7 @@ APP_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = APP_DIR.parent
 PROJECT_DIR = BACKEND_DIR.parent
 
-STORAGE_DIR = PROJECT_DIR / "storage"
+STORAGE_DIR = BACKEND_DIR / "storage"
 UPLOADS_DIR = STORAGE_DIR / "uploads"
 SAMPLES_DIR = STORAGE_DIR / "samples"
 
