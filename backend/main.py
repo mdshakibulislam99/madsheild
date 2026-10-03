@@ -72,6 +72,3 @@ async def scan_file(file: UploadFile = File(...)):
         "threats": [],
         "summary": "File uploaded successfully. The threat-analysis engine has not been added yet.",
     }
-
-def calculate_sha256(content: bytes) -> str:
-    return sha256(content).hexdigest()
