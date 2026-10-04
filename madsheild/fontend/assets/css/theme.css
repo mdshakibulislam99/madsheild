@@ -1,0 +1,501 @@
+/* Figma Exact Color Palette & Responsive Layout */
+:root {
+  --primary: #9327E3;
+  --primary-hover: #801FD1;
+  --bg-light: #FFFFFF;
+  --text-dark: #1E1B4B;
+  --text-muted: #334155;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================================================
+   1. NAVBAR STYLES (Logo Position Fixed to Right Shift)
+   ========================================================= */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 3rem; /* Left & Right side-e 3rem padding jar karone logo right-e shore ashbe */
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  background-color: #ffffff;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  margin-left: 10px; /* Halka ektu right-e shift korar jonno */
+}
+
+/* Logo Size Setup */
+.brand-logo {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* Nav Links Font Size & Gap */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links li a {
+  font-size: 17px;
+  font-weight: 500;
+  color: #475569;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.nav-links li a.active,
+.nav-links li a:hover {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.auth-btns {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.btn {
+  padding: 0.65rem 1.8rem;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  box-shadow: 0 4px 14px rgba(147, 39, 227, 0.25);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-text {
+  color: #1E1B4B;
+  background: transparent;
+}
+
+
+/* =========================================================
+   3. HERO SECTION (Dotted Grid Lowered Position)
+   ========================================================= */
+/* Hero Section (Dotted Grid Height & Padding Increased) */
+.hero-wrapper {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 1rem;    /* Top height baranor jonno spacing */
+  padding-bottom: 4rem; /* Bottom height baranor jonno spacing */
+  box-sizing: border-box;
+}
+
+.hero-container {
+  max-width: 100%;
+  width: 100%;
+  min-height: 75vh; /* Minimum height 60vh/65vh theke 75vh kora holo jate dot area-ta niche aro boro hoy */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background-image: radial-gradient(#CBD5E1 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #1E1B4B;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.5px;
+}
+
+.hero-subtitle {
+  color: #334155;
+  font-size: 1.15rem;
+  margin-bottom: 2.2rem;
+  font-weight: 400;
+}
+
+.upload-btn-lg {
+  padding: 0.9rem 4.5rem;
+  font-size: 1.1rem;
+  border-radius: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   PAGE 2: UPLOAD MODAL & CLEAR INFO ICON
+   ========================================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+  z-index: 1000;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.upload-card {
+  background: #FFFFFF;
+  width: 100%;
+  max-width: 540px;
+  border-radius: 16px;
+  padding: 1.8rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid #F1F5F9;
+  text-align: left;
+}
+
+.upload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.upload-header h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1E1B4B;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  color: #64748B;
+  cursor: pointer;
+}
+
+.upload-divider {
+  border: none;
+  border-top: 1px solid #E2E8F0;
+  margin: 0.8rem 0 1rem 0;
+}
+
+.upload-subtext {
+  color: #475569;
+  font-size: 0.95rem;
+  margin-bottom: 1.2rem;
+}
+
+.folder-icon {
+  color: #1E1B4B;
+  margin-bottom: 0.6rem;
+}
+
+.drop-text {
+  color: #1E1B4B;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.browse-link {
+  color: #9327E3;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+/* Page 2 Info Icon Dark Color Fix */
+.supported-files {
+  font-size: 0.85rem;
+  color: #1E293B;
+  font-weight: 500;
+  margin-bottom: 1.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.info-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: #0F172A; /* Aro garo dark color kora holo (Agerta #64748B chilo) */
+}
+
+.info-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* =========================================================
+   PAGE 3 & PAGE 4: DROPZONE STATES & BUTTONS
+   ========================================================= */
+.drop-zone {
+  border: 1.5px dashed #C084FC;
+  background-color: #FAF5FF;
+  border-radius: 12px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  margin-bottom: 0.8rem;
+  transition: all 0.25s ease;
+}
+
+.drop-zone:hover {
+  background-color: #F3E8FF;
+}
+
+.drop-zone-success {
+  border: 1.5px dashed #4ADE80 !important;
+  background-color: #F0FDF4 !important;
+}
+
+.drop-zone-error {
+  border: 1.5px dashed #F87171 !important;
+  background-color: #FEF2F2 !important;
+}
+
+.file-name-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1E1B4B;
+  margin-bottom: 0.4rem;
+}
+
+.status-msg {
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.success-msg { color: #22C55E; }
+.error-msg { color: #EF4444; }
+
+.retry-link {
+  color: #9327E3;
+  text-decoration: underline;
+  font-weight: 500;
+  margin-left: 0.2rem;
+}
+
+.btn-continue {
+  width: 100%;
+  padding: 0.85rem;
+  background-color: #F1F5F9;
+  color: #94A3B8;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: not-allowed;
+  transition: all 0.25s ease;
+}
+
+.btn-continue.btn-active {
+  background-color: #9327E3 !important;
+  color: #FFFFFF !important;
+  cursor: pointer !important;
+}
+
+
+/* =========================================================
+   PAGE 5: FILE ANALYZING LOADER STYLES
+   ========================================================= */
+.analyzing-card-inner {
+  border: 1.5px dashed #4ADE80;
+  background-color: #F0FDF4;
+  border-radius: 12px;
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.progress-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.analizing-filename {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.progress-percent {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 10px;
+  background-color: #E2E8F0;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: #4ADE80;
+  border-radius: 20px;
+  transition: width 0.2s ease-out;
+}
+
+.extract-logs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  text-align: left;
+  padding-left: 0.2rem;
+}
+
+.log-line {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.log-success { color: #22C55E; }
+.log-info { color: #64748B; }
+
+
+/* =========================================================
+   PAGE 6: RESULT DASHBOARD STYLES
+   ========================================================= */
+.dashboard-wrapper {
+  max-width: 1100px;
+  margin: 2.5rem auto;
+  padding: 0 1.5rem;
+}
+
+.dashboard-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 1.8rem;
+}
+
+.result-banner {
+  border: 1.5px dashed #4ADE80;
+  background-color: #F0FDF4;
+  border-radius: 16px;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.congrats-text {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #9327E3;
+  margin-bottom: 0.4rem;
+}
+
+.confidence-title {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #22C55E;
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.5px;
+}
+
+.status-subtext {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.detail-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 1.2rem 1.4rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0F172A;
+  margin-bottom: 1rem;
+}
+
+.card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  font-size: 0.88rem;
+}
+
+.card-row .label { color: #64748B; }
+.card-row .value { font-weight: 600; color: #1E293B; }
+
+@media (max-width: 768px) {
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+  .confidence-title {
+    font-size: 2.2rem;
+  }
+}

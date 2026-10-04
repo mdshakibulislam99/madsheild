@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Result Dashboard - MadShield</title>
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  <link rel="stylesheet" href="{% static 'css/ai-insights.css' %}">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="logo">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <span>MadShield</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="{% url 'home' %}">Scan</a></li>
+      <li><a href="{% url 'history' %}">History</a></li>
+      <li><a href="#">API Access</a></li>
+      <li><a href="#">About us</a></li>
+    </ul>
+    <div class="auth-btns">
+      <a href="#" class="btn btn-text">Register</a>
+      <a href="#" class="btn btn-primary">Log in</a>
+    </div>
+  </nav>
+
+  <main class="dashboard-container">
+    <h2 class="dash-title">Result dashboard</h2>
+
+    <!-- Success Banner (MacBook Pro 14" - 6) -->
+    <div class="result-banner success-banner">
+      <p class="subtitle">Congratulations...</p>
+      <h1 class="confidence-score">With 99.99% Confidence</h1>
+      <p class="status-desc">No virus or malware detected</p>
+    </div>
+
+    <!-- File Details Cards Grid -->
+    <div class="details-grid">
+      <div class="detail-card">
+        <h3>📄 File details</h3>
+        <p><strong>File name:</strong> demo.zip</p>
+        <p><strong>Size:</strong> 17 MB</p>
+        <p><strong>Type:</strong> zip</p>
+      </div>
+
+      <div class="detail-card">
+        <h3>📄 File details</h3>
+        <p><strong>File name:</strong> demo.zip</p>
+        <p><strong>Size:</strong> 17 MB</p>
+        <p><strong>Type:</strong> zip</p>
+      </div>
+
+      <div class="detail-card">
+        <h3>📄 File details</h3>
+        <p><strong>File name:</strong> demo.zip</p>
+        <p><strong>Size:</strong> 17 MB</p>
+        <p><strong>Type:</strong> zip</p>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

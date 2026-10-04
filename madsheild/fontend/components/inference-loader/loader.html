@@ -1,0 +1,25 @@
+{% load static %}
+<div class="modal-overlay" id="loaderModal">
+  <div class="modal-content text-center">
+    <div class="loader-header">
+      <h3>File analyzing...</h3>
+      <button class="close-btn" onclick="cancelAnalysis()">&times;</button>
+    </div>
+
+    <div class="progress-container">
+      <div class="file-info-strip">
+        <span class="file-name">demo.zip</span>
+        <span class="progress-percent" id="progressPercent">80%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressBarFill" style="width: 80%;"></div>
+      </div>
+    </div>
+
+    <ul class="analysis-steps">
+      <li class="step-done">✓ project.zip extracting</li>
+      <li class="step-done">✓ project.zip/check.exe scanner.exe</li>
+      <li class="step-active">⚡ project.zip/v32/test_code.py</li>
+    </ul>
+  </div>
+</div>
