@@ -53,9 +53,9 @@
       
       <!-- Banner Card -->
       <div class="result-banner">
-        <p class="congrats-text">Congratulations...</p>
-        <h1 class="confidence-title">With <span id="dynamicConfidence">99.99%</span> Confidence</h1>
-        <p class="status-subtext">No virus or malware detected</p>
+        <p class="congrats-text">Upload complete</p>
+        <h1 class="confidence-title">Analysis <span id="dynamicConfidence">pending</span></h1>
+        <p id="resultStatusSubtext" class="status-subtext">Waiting for the local AI model</p>
       </div>
 
       <!-- File Details Cards Grid -->
@@ -70,7 +70,7 @@
           </div>
           <div class="card-row">
             <span class="label">File name</span>
-            <span class="value" id="resFileName">demo.zip</span>
+            <span class="value" id="resFileName">No file selected</span>
           </div>
           <div class="card-row">
             <span class="label">Size</span>
@@ -78,7 +78,7 @@
           </div>
           <div class="card-row">
             <span class="label">Type</span>
-            <span class="value" id="resFileType">zip</span>
+            <span class="value" id="resFileType">-</span>
           </div>
         </div>
 
@@ -93,11 +93,11 @@
           </div>
           <div class="card-row">
             <span class="label">Scan Status</span>
-            <span class="value" style="color: #22C55E;">Clean / Safe</span>
+            <span class="value" id="resScanStatus" style="color: #64748B;">Uploaded</span>
           </div>
           <div class="card-row">
             <span class="label">Scan Method</span>
-            <span class="value">AI Deep Scan</span>
+            <span class="value">Local AI analysis</span>
           </div>
           <div class="card-row">
             <span class="label">Scan Time</span>
@@ -115,15 +115,15 @@
           </div>
           <div class="card-row">
             <span class="label">Malware Risk</span>
-            <span class="value" style="color: #22C55E;">0%</span>
+            <span class="value" id="resMalwareRisk" style="color: #64748B;">Pending</span>
           </div>
           <div class="card-row">
             <span class="label">Trojan / Spyware</span>
-            <span class="value" style="color: #22C55E;">0%</span>
+            <span class="value" id="resTrojanRisk" style="color: #64748B;">Pending</span>
           </div>
           <div class="card-row">
             <span class="label">Ransomware</span>
-            <span class="value" style="color: #22C55E;">0%</span>
+            <span class="value" id="resRansomwareRisk" style="color: #64748B;">Pending</span>
           </div>
         </div>
       </div>
@@ -157,12 +157,12 @@
               </svg>
             </div>
             <p class="drop-text">Drop your file here, <a href="#" id="browseLink" class="browse-link">or click to browse</a></p>
-            <input type="file" id="fileInput" style="display: none;">
+            <input type="file" id="fileInput" accept=".txt,.docx" style="display: none;">
           </div>
 
           <!-- Page 3: Success State -->
           <div id="successContent" class="dz-content" style="display: none;">
-            <p id="successFileName" class="file-name-text">demo.zip</p>
+            <p id="successFileName" class="file-name-text">selected file</p>
             <p class="status-msg success-msg">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
               File uploaded successfully
@@ -171,10 +171,10 @@
 
           <!-- Page 4: Error State -->
           <div id="errorContent" class="dz-content" style="display: none;">
-            <p id="errorFileName" class="file-name-text">demo.zip</p>
+            <p id="errorFileName" class="file-name-text">selected file</p>
             <p class="status-msg error-msg">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              File upload failed <a href="#" id="retryLink" class="retry-link">browse again</a>
+              <span id="errorMessage">File upload failed</span> <a href="#" id="retryLink" class="retry-link">browse again</a>
             </p>
           </div>
         </div>
@@ -187,7 +187,7 @@
       <line x1="12" y1="8" x2="12.01" y2="8"></line>
     </svg>
   </span>
-  Supported files: docx, zip, png or any kind of files
+  Supported files: .txt and .docx (maximum 10 MB per file)
 </p>
         <button id="continueBtn" class="btn btn-continue" disabled>Continue</button>
       </div>
@@ -196,7 +196,7 @@
       <div id="analyzingStepView" style="display: none;">
         <div class="analyzing-card-inner">
           <div class="progress-info-row">
-            <span id="analyzingFileName" class="analizing-filename">demo.zip</span>
+            <span id="analyzingFileName" class="analizing-filename">selected file</span>
             <span id="progressPercent" class="progress-percent">0%</span>
           </div>
           <div class="progress-bar-bg">
@@ -208,19 +208,19 @@
         <div class="extract-logs">
           <div class="log-line log-success">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>project.zip extracting</span>
+            <span>Preparing file upload</span>
           </div>
           <div class="log-line log-success">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>project.zip/docs/readme.txt</span>
+            <span>Checking file type and size</span>
           </div>
           <div class="log-line log-success">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>project.zip/src/main.py</span>
+            <span>Saving file in quarantine storage</span>
           </div>
           <div class="log-line log-info">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            <span>project.zip/tests/test_suite.js</span>
+            <span>Waiting for local AI analysis</span>
           </div>
         </div>
       </div>
@@ -228,6 +228,7 @@
     </div>
   </div>
 
+  <script src="assets/js/api-client.js"></script>
   <script>
     const openBtn = document.getElementById('openModalBtn');
     const closeBtn = document.getElementById('closeModalBtn');
@@ -248,6 +249,7 @@
     const errorContent = document.getElementById('errorContent');
     const successFileName = document.getElementById('successFileName');
     const errorFileName = document.getElementById('errorFileName');
+    const errorMessage = document.getElementById('errorMessage');
     const analyzingFileName = document.getElementById('analyzingFileName');
 
     const progressBarFill = document.getElementById('progressBarFill');
@@ -279,6 +281,23 @@
       fileInput.click();
     });
 
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('drop-zone-active');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('drop-zone-active');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('drop-zone-active');
+      if (e.dataTransfer.files.length > 0) {
+        handleFileUpload(e.dataTransfer.files[0]);
+      }
+    });
+
     retryLink?.addEventListener('click', (e) => {
       e.preventDefault();
       fileInput.click();
@@ -291,14 +310,22 @@
     });
 
     function handleFileUpload(file) {
-      currentSelectedFile = file;
       const fileName = file.name;
-      
-      if (fileName.toLowerCase().includes('error')) {
-        showErrorState(fileName);
-      } else {
-        showSuccessState(fileName);
+
+      if (!/\.(txt|docx)$/i.test(fileName)) {
+        currentSelectedFile = null;
+        showErrorState(fileName, 'Only .txt and .docx files are supported.');
+        return;
       }
+
+      if (file.size > 10 * 1024 * 1024) {
+        currentSelectedFile = null;
+        showErrorState(fileName, 'This file is larger than the 10 MB limit.');
+        return;
+      }
+
+      currentSelectedFile = file;
+      showSuccessState(fileName);
     }
 
     function showSuccessState(fileName) {
@@ -312,79 +339,67 @@
       continueBtn.classList.add('btn-active');
     }
 
-    function showErrorState(fileName) {
+    function showErrorState(fileName, message = 'File upload failed') {
       dropZone.className = 'drop-zone drop-zone-error';
       defaultContent.style.display = 'none';
       successContent.style.display = 'none';
       errorContent.style.display = 'block';
 
       errorFileName.textContent = fileName;
+      errorMessage.textContent = message;
       continueBtn.disabled = true;
       continueBtn.classList.remove('btn-active');
     }
 
-    // Dynamic Updates for Page 5 and Page 6
-    continueBtn.addEventListener('click', () => {
-      if (!currentSelectedFile) return;
+    continueBtn.addEventListener('click', async () => {
+      if (!currentSelectedFile || continueBtn.disabled) return;
 
-      // Extract Real Upload Details
-      const fileName = currentSelectedFile.name;
-      const fileSizeFormatted = formatFileSize(currentSelectedFile.size);
-      const fileExt = fileName.includes('.') ? fileName.split('.').pop().toLowerCase() : 'file';
-
-      // Dynamic Random Confidence Score (e.g., 95.32% - 99.95%)
-      const randomScore = (Math.random() * (99.95 - 95.20) + 95.20).toFixed(2);
-      
-      // Update Banner Score
-      const confidenceElem = document.getElementById('dynamicConfidence');
-      if (confidenceElem) confidenceElem.textContent = randomScore + '%';
-
-      // Update Card 1: Real File Details
-      const resName = document.getElementById('resFileName');
-      const resSize = document.getElementById('resFileSize');
-      const resType = document.getElementById('resFileType');
-      if (resName) resName.textContent = fileName;
-      if (resSize) resSize.textContent = fileSizeFormatted;
-      if (resType) resType.textContent = fileExt;
-
-      // Update Card 2: Scan Time
-      const resScanTime = document.getElementById('resScanTime');
-      if (resScanTime) {
-        const now = new Date();
-        resScanTime.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      }
-
-      // Switch Modal to Page 5 (Analyzing View)
-      modalTitle.textContent = "File analyzing...";
+      const file = currentSelectedFile;
+      modalTitle.textContent = 'Uploading file...';
       uploadStepView.style.display = 'none';
       analyzingStepView.style.display = 'block';
-      analyzingFileName.textContent = fileName;
+      analyzingFileName.textContent = file.name;
+      continueBtn.disabled = true;
 
-      // Progress Bar Animation
       let progress = 0;
-      const interval = setInterval(() => {
-        progress += 4;
-        if (progress > 80) progress = 80;
-        
-        progressBarFill.style.width = progress + '%';
-        progressPercent.textContent = progress + '%';
+      const progressTimer = setInterval(() => {
+        progress = Math.min(progress + 5, 85);
+        progressBarFill.style.width = `${progress}%`;
+        progressPercent.textContent = `${progress}%`;
+      }, 100);
 
-        if (progress >= 80) {
-          clearInterval(interval);
-          
-          setTimeout(() => {
-            progressBarFill.style.width = '100%';
-            progressPercent.textContent = '100%';
-            
-            setTimeout(() => {
-              // Hide Modal & Display Page 6 Result Dashboard
-              modal.classList.remove('active');
-              heroSection.style.display = 'none';
-              dashboardSection.style.display = 'block';
-            }, 500);
-          }, 800);
-        }
-      }, 50);
+      try {
+        const result = await MadSheildApi.uploadScan(file);
+        clearInterval(progressTimer);
+        progressBarFill.style.width = '100%';
+        progressPercent.textContent = '100%';
+
+        const storedFile = result.files?.[0] || {};
+        const fileName = storedFile.original_filename || file.name;
+        const fileExt = fileName.includes('.') ? fileName.split('.').pop().toLowerCase() : '-';
+        document.getElementById('resFileName').textContent = fileName;
+        document.getElementById('resFileSize').textContent = formatFileSize(storedFile.size_bytes || file.size);
+        document.getElementById('resFileType').textContent = fileExt;
+        document.getElementById('resScanStatus').textContent = 'Uploaded';
+        document.getElementById('resScanTime').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('dynamicConfidence').textContent = 'pending';
+        document.getElementById('resultStatusSubtext').textContent = 'Uploaded; local AI analysis is not connected yet.';
+
+        setTimeout(() => {
+          modal.classList.remove('active');
+          heroSection.style.display = 'none';
+          dashboardSection.style.display = 'block';
+          continueBtn.disabled = false;
+        }, 400);
+      } catch (error) {
+        clearInterval(progressTimer);
+        progressBarFill.style.width = '0%';
+        progressPercent.textContent = '0%';
+        modalTitle.textContent = 'Upload file';
+        uploadStepView.style.display = 'block';
+        analyzingStepView.style.display = 'none';
+        showErrorState(file.name, error.message || 'The backend could not upload this file.');
+      }
     });
 
     function resetModal() {
@@ -398,6 +413,8 @@
       errorContent.style.display = 'none';
       continueBtn.disabled = true;
       continueBtn.classList.remove('btn-active');
+      currentSelectedFile = null;
+      errorMessage.textContent = 'File upload failed';
       
       progressBarFill.style.width = '0%';
       progressPercent.textContent = '0%';
