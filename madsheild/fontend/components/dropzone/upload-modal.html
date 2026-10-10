@@ -7,7 +7,7 @@
   <p class="upload-subtext">Add your file or document here</p>
 
   <!-- Drag & Drop Dashed Box Area -->
-  <div class="drop-zone">
+  <div class="drop-zone" id="dropZone">
     <div class="folder-icon">
       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
@@ -15,7 +15,9 @@
         <polyline points="9 14 12 11 15 14"></polyline>
       </svg>
     </div>
-    <p class="drop-text">Drop your file here, <a href="#" class="browse-link">or click to browse</a></p>
+    <p class="drop-text">Drop your file here, <a href="#" class="browse-link" id="browseLink">or click to browse</a></p>
+    <!-- Hidden file input -->
+    <input type="file" id="fileInput" style="display: none;" />
   </div>
 
   <p class="supported-files">
@@ -27,5 +29,5 @@
     Supported files: docx, zip, png or any kind of files
   </p>
 
-  <button class="btn btn-continue" disabled>Continue</button>
+  <button class="btn btn-continue" id="continueBtn" disabled>Continue</button>
 </div>

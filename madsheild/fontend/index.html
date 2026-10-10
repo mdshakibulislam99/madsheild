@@ -228,6 +228,7 @@
     </div>
   </div>
 
+  <script src="assets/js/api-client.js"></script>
   <script>
     const openBtn = document.getElementById('openModalBtn');
     const closeBtn = document.getElementById('closeModalBtn');
@@ -324,67 +325,56 @@
     }
 
     // Dynamic Updates for Page 5 and Page 6
-    continueBtn.addEventListener('click', () => {
+    continueBtn.addEventListener('click', async () => {
       if (!currentSelectedFile) return;
 
-      // Extract Real Upload Details
       const fileName = currentSelectedFile.name;
-      const fileSizeFormatted = formatFileSize(currentSelectedFile.size);
-      const fileExt = fileName.includes('.') ? fileName.split('.').pop().toLowerCase() : 'file';
 
-      // Dynamic Random Confidence Score (e.g., 95.32% - 99.95%)
-      const randomScore = (Math.random() * (99.95 - 95.20) + 95.20).toFixed(2);
-      
-      // Update Banner Score
-      const confidenceElem = document.getElementById('dynamicConfidence');
-      if (confidenceElem) confidenceElem.textContent = randomScore + '%';
-
-      // Update Card 1: Real File Details
-      const resName = document.getElementById('resFileName');
-      const resSize = document.getElementById('resFileSize');
-      const resType = document.getElementById('resFileType');
-      if (resName) resName.textContent = fileName;
-      if (resSize) resSize.textContent = fileSizeFormatted;
-      if (resType) resType.textContent = fileExt;
-
-      // Update Card 2: Scan Time
-      const resScanTime = document.getElementById('resScanTime');
-      if (resScanTime) {
-        const now = new Date();
-        resScanTime.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      }
-
-      // Switch Modal to Page 5 (Analyzing View)
       modalTitle.textContent = "File analyzing...";
       uploadStepView.style.display = 'none';
       analyzingStepView.style.display = 'block';
       analyzingFileName.textContent = fileName;
+      continueBtn.disabled = true;
 
-      // Progress Bar Animation
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 4;
-        if (progress > 80) progress = 80;
-        
-        progressBarFill.style.width = progress + '%';
-        progressPercent.textContent = progress + '%';
+      try {
+        let progress = 0;
+        const progressTimer = setInterval(() => {
+          progress = Math.min(progress + 4, 80);
+          progressBarFill.style.width = progress + '%';
+          progressPercent.textContent = progress + '%';
+        }, 50);
 
-        if (progress >= 80) {
-          clearInterval(interval);
-          
-          setTimeout(() => {
-            progressBarFill.style.width = '100%';
-            progressPercent.textContent = '100%';
-            
-            setTimeout(() => {
-              // Hide Modal & Display Page 6 Result Dashboard
-              modal.classList.remove('active');
-              heroSection.style.display = 'none';
-              dashboardSection.style.display = 'block';
-            }, 500);
-          }, 800);
+        const result = await scanFile(currentSelectedFile);
+        clearInterval(progressTimer);
+
+        progressBarFill.style.width = '100%';
+        progressPercent.textContent = '100%';
+
+        document.getElementById('resFileName').textContent = result.filename;
+        document.getElementById('resFileSize').textContent = formatFileSize(result.size_bytes);
+        document.getElementById('resFileType').textContent =
+          result.content_type || 'unknown';
+        document.getElementById('resScanTime').textContent =
+          new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        const confidenceElem = document.getElementById('dynamicConfidence');
+        if (confidenceElem) {
+          confidenceElem.textContent = result.risk_score === null
+            ? 'Pending'
+            : `${100 - result.risk_score}%`;
         }
-      }, 50);
+
+        setTimeout(() => {
+          modal.classList.remove('active');
+          heroSection.style.display = 'none';
+          dashboardSection.style.display = 'block';
+        }, 500);
+      } catch (error) {
+        console.error('File scan failed.', error);
+        alert(`Unable to scan the file: ${error.message}`);
+        modal.classList.remove('active');
+        resetModal();
+      }
     });
 
     function resetModal() {
@@ -404,6 +394,5 @@
       fileInput.value = '';
     }
   </script>
-
 </body>
 </html>

@@ -1,7 +1,10 @@
 from hashlib import sha256
+from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 
 app = FastAPI(
@@ -26,14 +29,17 @@ app.add_middleware(
 
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "fontend"
+app.mount(
+    "/assets",
+    StaticFiles(directory=FRONTEND_DIR / "assets"),
+    name="assets",
+)
+
 
 @app.get("/")
 def root():
-    return {
-        "name": "MadSheild Backend",
-        "docs": "/docs",
-        "health": "/health",
-    }
+    return FileResponse(FRONTEND_DIR / "index.html")
 
 
 @app.get("/health")

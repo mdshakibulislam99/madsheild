@@ -1,0 +1,41 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "FastAPI: Debug",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "cwd": "${workspaceFolder}\\madsheild\\backend",
+            "args": [
+                "main:app",
+                "--reload",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "8001"
+            ],
+            "jinja": true
+        },
+        {
+            "name": "Django: Debug",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}\\manage.py",
+            "args": [
+                "runserver",
+                "127.0.0.1:8000",
+                "--noreload"
+            ],
+            "django": true
+        }
+    ],
+    "compounds": [
+        {
+            "name": "MadSheild: Debug FastAPI",
+            "configurations": [
+                "FastAPI: Debug"
+            ]
+        }
+    ]
+}

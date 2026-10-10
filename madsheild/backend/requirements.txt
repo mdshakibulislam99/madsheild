@@ -1,3 +1,4 @@
 fastapi
 uvicorn[standard]
 python-multipart
+Django>=6.1,<7
