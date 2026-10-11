@@ -1,108 +1,119 @@
-# MadSheild
+# MadShield
 
-MadSheild is a lightweight security-analysis project for checking uploaded files and presenting a simple dashboard for review. The current implementation includes a FastAPI backend, a browser-based frontend, and file upload validation with metadata collection.
+A local document security analyzer with a FastAPI backend and an HTML/JavaScript frontend served on the same port. It analyzes `.txt` and `.docx` files with static rules and can run inference using an existing model. It does not train a model or execute uploaded content.
 
-## Overview
+## Start locally
 
-This project is designed as a foundation for an AI-driven file security analyzer. At the moment, the system validates uploaded files, enforces a 10 MB size limit, calculates a SHA-256 hash, and returns a structured response payload. The dashboard is served from the same backend and provides a clean UI for uploading a file and viewing a scan result.
+Run these commands from the repository root: the directory containing both `run.py` and `madsheild/`.
 
-## Current Features
+macOS / Linux:
 
-- File upload endpoint via FastAPI
-- File size validation (10 MB max)
-- Filename validation
-- SHA-256 hashing for uploaded content
-- Static frontend served from the same app
-- Local dashboard and API documentation routes
-- CORS support for local frontend development
+```sh
+python3 -m venv madsheild/backend/.venv
+madsheild/backend/.venv/bin/python -m pip install -r madsheild/backend/requirements.txt
+madsheild/backend/.venv/bin/python run.py
+```
 
-## Project Structure
+Windows PowerShell:
+
+```powershell
+py -m venv madsheild/backend/.venv
+.\madsheild\backend\.venv\Scripts\python.exe -m pip install -r madsheild/backend/requirements.txt
+.\madsheild\backend\.venv\Scripts\python.exe run.py
+```
+
+Keep the terminal open. Visit [the application](http://127.0.0.1:8001/), [API documentation](http://127.0.0.1:8001/docs), or [health check](http://127.0.0.1:8001/health). A separate frontend server is unnecessary.
+
+## Analysis workflow
+
+1. Validate the filename, extension, and actual upload size (10 MiB per file by default).
+2. Extract UTF-8 TXT lines or DOCX body/table paragraphs, keeping blank positions and recording line or paragraph numbers.
+3. Check static indicators such as encoded PowerShell, download-and-execute commands, shadow-copy deletion, dynamic execution, macros, and embedded objects.
+4. Optionally run an existing model. Rule findings and model predictions have separate sources and coverage information.
+5. Save the quarantined upload and its report, then display the report in the browser.
+
+Identical content can reuse an in-memory analysis result for five minutes (up to 64 entries). Each upload still gets a new scan ID and saved report. Failed model requests are not cached. The default concurrency limit is two active scans.
+
+`risk_score` is a heuristic rule score, not a malware probability. Without a configured model, `malware_probability` is `null`. `confidence` remains `null` because no calibration evidence is supplied. `no_indicators_found` means that the implemented checks found no indicators; it does not certify a file as safe. Quoted commands in educational documents can trigger rules.
+
+## API
+
+| Endpoint | Purpose |
+| --- | --- |
+| `POST /api/v1/scans` | Analyze one multipart file using the field name **file** |
+| `GET /api/v1/reports/{scan_id}` | Retrieve a saved report |
+| `GET /api/v1/capabilities` | Supported extensions, size limit, concurrency, and model mode |
+| `GET /health` | Check whether the server is running |
+
+Example upload:
+
+```sh
+curl -F "file=@/absolute/path/example.txt" http://127.0.0.1:8001/api/v1/scans
+```
+
+Reports include metadata, SHA-256, a verdict (`suspicious`, `review_required`, or `no_indicators_found`), findings with locations, model status/coverage, limitations, cache status, and timings. `timings_ms.total` measures server work before report JSON persistence, excluding network transfer. See [backend configuration and model contracts](backend/README.md).
+
+## Validation
+
+From the repository root:
+
+```sh
+madsheild/backend/.venv/bin/python -m unittest discover -s madsheild/backend/tests -p 'test_*.py' -v
+```
+
+On Windows, use `.\madsheild\backend\.venv\Scripts\python.exe` instead. Tests cover extraction, document limits, rule locations, synthetic model inference, model failures, caching, uploads, and report retrieval. Synthetic model fixtures validate the interface and calculations; they do not establish detection accuracy.
+
+## Layout
 
 ```text
-madsheild/
-├── backend/
-│   ├── main.py
-│   ├── requirements.txt
-│   └── README.md
-├── fontend/
-│   ├── assets/
-│   ├── dashboard/
-│   ├── index.html
-│   └── ...
-├── core/
-│   ├── settings.py
-│   ├── urls.py
-│   └── ...
+repository root/
 ├── run.py
-├── manage.py
-└── README.md
+├── madsheild/
+│   ├── backend/
+│   │   ├── main.py                 # Compatibility entry point
+│   │   ├── app/
+│   │   │   ├── config.py
+│   │   │   ├── main.py
+│   │   │   ├── api/
+│   │   │   │   ├── dependencies.py
+│   │   │   │   └── endpoints/
+│   │   │   │       ├── upload.py
+│   │   │   │       └── reports.py
+│   │   │   ├── services/file_manager.py
+│   │   │   ├── ai/
+│   │   │   │   ├── feature_extractor.py
+│   │   │   │   ├── models/classifier.py
+│   │   │   │   └── weights/         # Real artifacts are ignored by Git
+│   │   │   └── workers/tasks.py
+│   │   ├── storage/
+│   │   │   ├── uploads/
+│   │   │   └── samples/
+│   │   ├── tests/
+│   │   │   ├── test_api.py
+│   │   │   └── test_ai.py
+│   │   ├── requirements.txt
+│   │   └── Dockerfile
+│   └── fontend/                    # Existing directory spelling retained
+│       ├── index.html
+│       └── assets/
+└── core/                          # Legacy Django scaffold, unused by run.py
 ```
 
-## Quick Start
+Python package directories also contain `__init__.py`. Login, registration, navigation history, and API-access pages are outside this implementation stage; existing navigation placeholders remain. Retrieving an individual report does not implement a user history page.
 
-From the project root:
+## Container
 
-```powershell
-cd d:\madsheild-project\madsheild
-py -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r madsheild\backend\requirements.txt
+From the repository root:
+
+```sh
+docker build -f madsheild/backend/Dockerfile -t madshield .
+docker run --rm -p 127.0.0.1:8001:8001 madshield
 ```
 
-Run the app:
+Container reports are ephemeral unless a writable volume is mounted at `/srv/madshield/madsheild/backend/storage`. Docker execution requires a working Docker installation.
 
-```powershell
-.\.venv\Scripts\python.exe -m uvicorn madsheild.backend.main:app --reload --host 127.0.0.1 --port 8001
-```
+## Current scope
 
-Or use the helper script:
+This is a local development application without authentication or automatic storage retention. Keep it bound to loopback; saved reports and uploads need manual cleanup. Quarantine storage is not an operating-system execution sandbox.
 
-```powershell
-py run.py
-```
-
-Then open:
-
-- http://127.0.0.1:8001/
-- http://127.0.0.1:8001/docs
-- http://127.0.0.1:8001/health
-
-## API Endpoint
-
-### POST /api/v1/scans
-
-Uploads a file and returns a structured scan payload containing metadata such as:
-
-- filename
-- content type
-- size in bytes
-- SHA-256 hash
-- verdict
-- risk score
-- threat list
-- summary
-
-Example response:
-
-```json
-{
-  "status": "completed",
-  "filename": "example.pdf",
-  "content_type": "application/pdf",
-  "size_bytes": 12345,
-  "sha256": "...",
-  "verdict": "not_analyzed",
-  "risk_score": null,
-  "threats": [],
-  "summary": "File uploaded successfully. The threat-analysis engine has not been added yet."
-}
-```
-
-## Development Notes
-
-- The backend is built with FastAPI and uses a static frontend served from the `fontend` directory.
-- The project includes Django dependencies, but the active runtime for the security app is the FastAPI backend.
-- The current scan workflow is intentionally a scaffold; the true malware/threat-detection engine is still to be implemented.
-
-## License
-
-This project does not currently declare a license. Add a license file if you plan to distribute or publish it publicly.
+TXT input must be UTF-8. DOCX analysis covers body/table text and archive indicators; it does not inspect headers, footers, OCR, or the contents of embedded files. PDF, executable-file analysis, folder/batch scans, production deployment controls, and model training are outside this stage. The repository supplies no trained weights, labeled dataset, or accuracy benchmark.

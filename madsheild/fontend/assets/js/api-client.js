@@ -1,24 +1,26 @@
-const API_BASE_URL = '';
+async function readApiResponse(response) {
+  let body;
+  try {
+    body = await response.json();
+  } catch (error) {
+    throw new Error(`The server returned an unreadable response (status ${response.status}).`);
+  }
+  if (!response.ok) {
+    const message = typeof body.detail === 'string'
+      ? body.detail : `Request failed with status ${response.status}.`;
+    throw new Error(message);
+  }
+  return body;
+}
 
-async function scanFile(file) {
+async function getCapabilities() {
+  return readApiResponse(await fetch('/api/v1/capabilities'));
+}
+
+async function scanFile(file, signal) {
   const formData = new FormData();
   formData.append('file', file);
-
-  const response = await fetch(`${API_BASE_URL}/api/v1/scans`, {
-    method: 'POST',
-    body: formData,
-  });
-
-  if (!response.ok) {
-    let detail = `Scan failed with status ${response.status}.`;
-    try {
-      const error = await response.json();
-      if (error.detail) detail = error.detail;
-    } catch (error) {
-      console.warn('The scan error response was not valid JSON.', error);
-    }
-    throw new Error(detail);
-  }
-
-  return response.json();
+  return readApiResponse(await fetch('/api/v1/scans', {
+    method: 'POST', body: formData, signal,
+  }));
 }

@@ -6,12 +6,12 @@ __pycache__/
 *.py[cod]
 .env
 
-uploads/
 data/
-samples/
 IoTPOT/
 
-.venv/
-__pycache__/
-*.py[cod]
-.env
+storage/uploads/*
+!storage/uploads/.gitkeep
+storage/samples/*
+!storage/samples/.gitkeep
+app/ai/weights/*
+!app/ai/weights/.gitkeep

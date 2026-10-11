@@ -3,396 +3,100 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MadShield - AI Powered Threat Detector</title>
+  <title>MadSheild — File Analysis</title>
   <link rel="stylesheet" href="assets/css/theme.css">
 </head>
 <body>
-
-  <!-- Navigation Bar -->
-  <nav class="navbar">
-    <div class="logo">
-      <img src="assets/images/logo_2.png" alt="MadShield Logo" class="brand-logo">
-    </div>
-
+  <nav class="navbar" aria-label="Main navigation">
+    <a class="logo" href="#"><img src="assets/images/logo_2.png" alt="MadSheild" class="brand-logo"></a>
     <ul class="nav-links">
       <li><a href="#" class="active">Scan</a></li>
       <li><a href="#">History</a></li>
-      <li><a href="#">Api access</a></li>
+      <li><a href="#">API access</a></li>
       <li><a href="#">About us</a></li>
     </ul>
-
-    <div class="auth-btns">
-      <a href="#" class="btn btn-text">register</a>
-      <a href="#" class="btn btn-primary">log in</a>
-    </div>
+    <div class="auth-btns"><a href="#" class="btn btn-text">Register</a><a href="#" class="btn btn-primary">Log in</a></div>
   </nav>
 
-  <!-- Main Content Container -->
-  <main class="container">
-    
-    <!-- Hero Section (Page 1) -->
+  <main>
     <section id="heroSection" class="hero-wrapper">
       <div class="hero-container">
         <h1 class="hero-title">Welcome to MadSheild</h1>
-        <p class="hero-subtitle">Ai based file security analyzer</p>
-        
-        <button id="openModalBtn" class="btn btn-primary upload-btn-lg">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-          Upload File
-        </button>
+        <p class="hero-subtitle">Analyze your document for suspicious content</p>
+        <button id="openModalBtn" class="btn btn-primary upload-btn-lg">Upload file</button>
       </div>
     </section>
 
-    <!-- Page 6: Result Dashboard Section -->
-    <section id="dashboardSection" class="dashboard-wrapper" style="display: none;">
-      <h2 class="dashboard-title">Result dashboard</h2>
-      
-      <!-- Banner Card -->
-      <div class="result-banner">
-        <p class="congrats-text">Congratulations...</p>
-        <h1 class="confidence-title">With <span id="dynamicConfidence">99.99%</span> Confidence</h1>
-        <p class="status-subtext">No virus or malware detected</p>
+    <section id="dashboardSection" class="dashboard-wrapper" hidden aria-live="polite">
+      <h2 class="dashboard-title">Scan results</h2>
+      <div id="resultBanner" class="result-banner">
+        <h3 id="resultVerdict" class="result-title"></h3>
+        <p id="resultSummary" class="status-subtext"></p>
       </div>
-
-      <!-- File Details Cards Grid -->
       <div class="details-grid">
-        <!-- Card 1: Dynamic File Info -->
         <div class="detail-card">
-          <div class="card-header">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E293B" stroke-width="2">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <span>File Details</span>
-          </div>
-          <div class="card-row">
-            <span class="label">File name</span>
-            <span class="value" id="resFileName">demo.zip</span>
-          </div>
-          <div class="card-row">
-            <span class="label">Size</span>
-            <span class="value" id="resFileSize">0 KB</span>
-          </div>
-          <div class="card-row">
-            <span class="label">Type</span>
-            <span class="value" id="resFileType">zip</span>
-          </div>
+          <h3 class="card-header">File details</h3>
+          <div class="card-row"><span class="label">File name</span><span id="resFileName" class="value"></span></div>
+          <div class="card-row"><span class="label">Size</span><span id="resFileSize" class="value"></span></div>
+          <div class="card-row"><span class="label">Type</span><span id="resFileType" class="value"></span></div>
         </div>
-
-        <!-- Card 2: Scan Summary -->
         <div class="detail-card">
-          <div class="card-header">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E293B" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-            <span>Scan Summary</span>
-          </div>
-          <div class="card-row">
-            <span class="label">Scan Status</span>
-            <span class="value" style="color: #22C55E;">Clean / Safe</span>
-          </div>
-          <div class="card-row">
-            <span class="label">Scan Method</span>
-            <span class="value">AI Deep Scan</span>
-          </div>
-          <div class="card-row">
-            <span class="label">Scan Time</span>
-            <span class="value" id="resScanTime">Just now</span>
-          </div>
+          <h3 class="card-header">Analysis</h3>
+          <div class="card-row"><span class="label">Status</span><span id="resStatus" class="value"></span></div>
+          <div class="card-row"><span class="label">Processing time</span><span id="resDuration" class="value"></span></div>
+          <div class="card-row"><span class="label">Scan time</span><span id="resScanTime" class="value"></span></div>
+          <div class="card-row"><span class="label">Reused analysis</span><span id="resCache" class="value"></span></div>
         </div>
-
-        <!-- Card 3: Threat Metrics -->
         <div class="detail-card">
-          <div class="card-header">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E293B" stroke-width="2">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-            </svg>
-            <span>Threat Analysis</span>
-          </div>
-          <div class="card-row">
-            <span class="label">Malware Risk</span>
-            <span class="value" style="color: #22C55E;">0%</span>
-          </div>
-          <div class="card-row">
-            <span class="label">Trojan / Spyware</span>
-            <span class="value" style="color: #22C55E;">0%</span>
-          </div>
-          <div class="card-row">
-            <span class="label">Ransomware</span>
-            <span class="value" style="color: #22C55E;">0%</span>
-          </div>
+          <h3 class="card-header">Risk indicators</h3>
+          <div class="card-row"><span class="label">Rule risk score</span><span id="resRisk" class="value"></span></div>
+          <div class="card-row"><span class="label">Model probability</span><span id="resProbability" class="value"></span></div>
+          <div class="card-row"><span class="label">Model status</span><span id="resModelStatus" class="value"></span></div>
+          <div class="card-row"><span class="label">Confidence</span><span class="value">Not available</span></div>
         </div>
       </div>
+      <section class="detail-card findings-section">
+        <h3 class="card-header">Findings</h3>
+        <div id="findingsList"></div>
+      </section>
+      <section class="detail-card limitations-section">
+        <h3 class="card-header">Analysis coverage and limitations</h3>
+        <p id="modelMessage"></p>
+        <ul id="limitationsList"></ul>
+      </section>
+      <div class="result-actions">
+        <button id="scanAgainBtn" class="btn btn-primary">Scan another file</button>
+        <a id="reportLink" class="btn btn-text" target="_blank" rel="noopener">View JSON report</a>
+      </div>
     </section>
-
   </main>
 
-  <!-- Page 2, 3, 4: Upload Modal Overlay -->
-  <div id="uploadModal" class="modal-overlay">
+  <div id="uploadModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
     <div class="upload-card">
-      <div class="upload-header">
-        <h2 id="modalTitle">Upload file</h2>
-        <button id="closeModalBtn" class="close-btn">&times;</button>
-      </div>
-
+      <div class="upload-header"><h2 id="modalTitle">Upload file</h2><button id="closeModalBtn" class="close-btn" aria-label="Close">×</button></div>
       <hr class="upload-divider">
-
-      <!-- Upload View (Page 2, 3, 4) -->
       <div id="uploadStepView">
         <p class="upload-subtext">Add your file or document here</p>
-
-        <!-- Dropzone Container -->
         <div id="dropZone" class="drop-zone">
-          <!-- Page 2: Default State -->
-          <div id="defaultContent" class="dz-content">
-            <div class="folder-icon">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                <line x1="12" y1="11" x2="12" y2="17"></line>
-                <polyline points="9 14 12 11 15 14"></polyline>
-              </svg>
-            </div>
-            <p class="drop-text">Drop your file here, <a href="#" id="browseLink" class="browse-link">or click to browse</a></p>
-            <input type="file" id="fileInput" style="display: none;">
-          </div>
-
-          <!-- Page 3: Success State -->
-          <div id="successContent" class="dz-content" style="display: none;">
-            <p id="successFileName" class="file-name-text">demo.zip</p>
-            <p class="status-msg success-msg">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-              File uploaded successfully
-            </p>
-          </div>
-
-          <!-- Page 4: Error State -->
-          <div id="errorContent" class="dz-content" style="display: none;">
-            <p id="errorFileName" class="file-name-text">demo.zip</p>
-            <p class="status-msg error-msg">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              File upload failed <a href="#" id="retryLink" class="retry-link">browse again</a>
-            </p>
-          </div>
+          <div id="defaultContent" class="dz-content"><p class="drop-text">Drop a file here or <a href="#" id="browseLink">browse</a></p></div>
+          <input type="file" id="fileInput" accept=".txt,.docx" hidden>
+          <div id="successContent" hidden><p id="successFileName" class="file-name-text"></p><p class="status-msg success-msg">File selected</p><a href="#" id="changeFileLink">Choose another file</a></div>
+          <div id="errorContent" hidden><p id="errorFileName" class="file-name-text"></p><p id="errorMessage" class="status-msg error-msg" role="alert"></p><a href="#" id="retryLink">Browse again</a></div>
         </div>
-
-        <p class="supported-files">
-  <span class="info-icon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"></circle>
-      <line x1="12" y1="16" x2="12" y2="12"></line>
-      <line x1="12" y1="8" x2="12.01" y2="8"></line>
-    </svg>
-  </span>
-  Supported files: docx, zip, png or any kind of files
-</p>
+        <p id="supportedFilesText" class="supported-files">Supported files: .txt and .docx (maximum 10 MB per file)</p>
         <button id="continueBtn" class="btn btn-continue" disabled>Continue</button>
       </div>
-
-      <!-- Page 5: File Analyzing Loader View -->
-      <div id="analyzingStepView" style="display: none;">
+      <div id="analyzingStepView" hidden>
         <div class="analyzing-card-inner">
-          <div class="progress-info-row">
-            <span id="analyzingFileName" class="analizing-filename">demo.zip</span>
-            <span id="progressPercent" class="progress-percent">0%</span>
-          </div>
-          <div class="progress-bar-bg">
-            <div id="progressBarFill" class="progress-bar-fill" style="width: 0%;"></div>
-          </div>
-        </div>
-
-        <!-- Extracting Log Lines -->
-        <div class="extract-logs">
-          <div class="log-line log-success">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>project.zip extracting</span>
-          </div>
-          <div class="log-line log-success">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>project.zip/docs/readme.txt</span>
-          </div>
-          <div class="log-line log-success">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>project.zip/src/main.py</span>
-          </div>
-          <div class="log-line log-info">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            <span>project.zip/tests/test_suite.js</span>
-          </div>
+          <p id="analyzingFileName" class="analyzing-filename"></p>
+          <div class="progress-bar-bg" role="progressbar" aria-label="Analysis in progress"><div class="progress-bar-fill indeterminate"></div></div>
+          <p class="analysis-pending" role="status">Uploading and analyzing your file…</p>
+          <p class="analysis-note">Results will appear when the server finishes.</p>
         </div>
       </div>
-
     </div>
   </div>
-
   <script src="assets/js/api-client.js"></script>
-  <script>
-    const openBtn = document.getElementById('openModalBtn');
-    const closeBtn = document.getElementById('closeModalBtn');
-    const modal = document.getElementById('uploadModal');
-    const modalTitle = document.getElementById('modalTitle');
-    
-    const uploadStepView = document.getElementById('uploadStepView');
-    const analyzingStepView = document.getElementById('analyzingStepView');
-    
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const browseLink = document.getElementById('browseLink');
-    const retryLink = document.getElementById('retryLink');
-    const continueBtn = document.getElementById('continueBtn');
-
-    const defaultContent = document.getElementById('defaultContent');
-    const successContent = document.getElementById('successContent');
-    const errorContent = document.getElementById('errorContent');
-    const successFileName = document.getElementById('successFileName');
-    const errorFileName = document.getElementById('errorFileName');
-    const analyzingFileName = document.getElementById('analyzingFileName');
-
-    const progressBarFill = document.getElementById('progressBarFill');
-    const progressPercent = document.getElementById('progressPercent');
-
-    const heroSection = document.getElementById('heroSection');
-    const dashboardSection = document.getElementById('dashboardSection');
-
-    let currentSelectedFile = null;
-
-    // File Size Formatting Helper Function
-    function formatFileSize(bytes) {
-      if (!bytes || bytes === 0) return '0 Bytes';
-      const k = 1024;
-      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-
-    openBtn.addEventListener('click', () => modal.classList.add('active'));
-    
-    closeBtn.addEventListener('click', () => {
-      modal.classList.remove('active');
-      setTimeout(resetModal, 300);
-    });
-
-    browseLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      fileInput.click();
-    });
-
-    retryLink?.addEventListener('click', (e) => {
-      e.preventDefault();
-      fileInput.click();
-    });
-
-    fileInput.addEventListener('change', (e) => {
-      if (e.target.files.length > 0) {
-        handleFileUpload(e.target.files[0]);
-      }
-    });
-
-    function handleFileUpload(file) {
-      currentSelectedFile = file;
-      const fileName = file.name;
-      
-      if (fileName.toLowerCase().includes('error')) {
-        showErrorState(fileName);
-      } else {
-        showSuccessState(fileName);
-      }
-    }
-
-    function showSuccessState(fileName) {
-      dropZone.className = 'drop-zone drop-zone-success';
-      defaultContent.style.display = 'none';
-      errorContent.style.display = 'none';
-      successContent.style.display = 'block';
-      
-      successFileName.textContent = fileName;
-      continueBtn.disabled = false;
-      continueBtn.classList.add('btn-active');
-    }
-
-    function showErrorState(fileName) {
-      dropZone.className = 'drop-zone drop-zone-error';
-      defaultContent.style.display = 'none';
-      successContent.style.display = 'none';
-      errorContent.style.display = 'block';
-
-      errorFileName.textContent = fileName;
-      continueBtn.disabled = true;
-      continueBtn.classList.remove('btn-active');
-    }
-
-    // Dynamic Updates for Page 5 and Page 6
-    continueBtn.addEventListener('click', async () => {
-      if (!currentSelectedFile) return;
-
-      const fileName = currentSelectedFile.name;
-
-      modalTitle.textContent = "File analyzing...";
-      uploadStepView.style.display = 'none';
-      analyzingStepView.style.display = 'block';
-      analyzingFileName.textContent = fileName;
-      continueBtn.disabled = true;
-
-      try {
-        let progress = 0;
-        const progressTimer = setInterval(() => {
-          progress = Math.min(progress + 4, 80);
-          progressBarFill.style.width = progress + '%';
-          progressPercent.textContent = progress + '%';
-        }, 50);
-
-        const result = await scanFile(currentSelectedFile);
-        clearInterval(progressTimer);
-
-        progressBarFill.style.width = '100%';
-        progressPercent.textContent = '100%';
-
-        document.getElementById('resFileName').textContent = result.filename;
-        document.getElementById('resFileSize').textContent = formatFileSize(result.size_bytes);
-        document.getElementById('resFileType').textContent =
-          result.content_type || 'unknown';
-        document.getElementById('resScanTime').textContent =
-          new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        const confidenceElem = document.getElementById('dynamicConfidence');
-        if (confidenceElem) {
-          confidenceElem.textContent = result.risk_score === null
-            ? 'Pending'
-            : `${100 - result.risk_score}%`;
-        }
-
-        setTimeout(() => {
-          modal.classList.remove('active');
-          heroSection.style.display = 'none';
-          dashboardSection.style.display = 'block';
-        }, 500);
-      } catch (error) {
-        console.error('File scan failed.', error);
-        alert(`Unable to scan the file: ${error.message}`);
-        modal.classList.remove('active');
-        resetModal();
-      }
-    });
-
-    function resetModal() {
-      modalTitle.textContent = "Upload file";
-      uploadStepView.style.display = 'block';
-      analyzingStepView.style.display = 'none';
-      
-      dropZone.className = 'drop-zone';
-      defaultContent.style.display = 'block';
-      successContent.style.display = 'none';
-      errorContent.style.display = 'none';
-      continueBtn.disabled = true;
-      continueBtn.classList.remove('btn-active');
-      
-      progressBarFill.style.width = '0%';
-      progressPercent.textContent = '0%';
-      fileInput.value = '';
-    }
-  </script>
+  <script src="assets/js/app.js"></script>
 </body>
 </html>
