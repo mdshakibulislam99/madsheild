@@ -72,3 +72,20 @@ def save_report(report: dict) -> None:
 def load_report(scan_id: str) -> dict:
     with (scan_directory(scan_id) / "report.json").open(encoding="utf-8") as source:
         return json.load(source)
+
+
+def list_reports(offset: int, limit: int) -> dict:
+    fields = ("scan_id", "filename", "created_at", "verdict", "risk_score", "size_bytes")
+    reports = []
+    for path in UPLOADS_DIR.glob("*/report.json"):
+        if path.is_symlink() or path.parent.is_symlink():
+            continue
+        try:
+            report = load_report(path.parent.name)
+            if report.get("scan_id") != path.parent.name:
+                continue
+            reports.append({key: report[key] for key in fields})
+        except (OSError, ValueError, KeyError, TypeError, AttributeError):
+            continue
+    reports.sort(key=lambda report: (str(report["created_at"]), report["scan_id"]), reverse=True)
+    return {"items": reports[offset:offset + limit], "total": len(reports), "offset": offset, "limit": limit}

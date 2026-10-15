@@ -8,6 +8,8 @@
   let selectedFiles = [];
   let activeRequest = null;
   let previousFocus = null;
+  let historyOffset = 0;
+  let historyRequest = 0;
   let maxFileSize = 10 * 1024 * 1024;
   let maxBatchFiles = 100;
   let maxBatchSize = 100 * 1024 * 1024;
@@ -110,6 +112,7 @@
     return parts.join(' · ') || 'Document';
   }
   function renderReport(report, preserveBatch = false) {
+    element('historySection').hidden = true;
     if (!preserveBatch) element('batchSummary').hidden = true;
     document.querySelector('.details-grid').hidden = false;
     document.querySelector('.findings-section').hidden = false;
@@ -242,6 +245,58 @@
     return (await Promise.all(entries.map((entry) => readEntry(entry)))).flat();
   }
 
+  async function showHistory() {
+    const request = ++historyRequest;
+    element('heroSection').hidden = true;
+    element('dashboardSection').hidden = true;
+    element('historySection').hidden = false;
+    element('historyRows').replaceChildren();
+    setText('historyStatus', 'Loading...');
+    element('historyPrevious').disabled = true;
+    element('historyNext').disabled = true;
+    try {
+      const page = await readApiResponse(await fetch(`/api/v1/reports?offset=${historyOffset}&limit=20`));
+      if (request !== historyRequest) return;
+      for (const report of page.items) {
+        const row = document.createElement('tr');
+        for (const value of [report.filename, new Date(report.created_at).toLocaleString(), report.verdict.replaceAll('_', ' '), `${report.risk_score} / 100`]) {
+          const cell = document.createElement('td');
+          cell.textContent = value;
+          cell.style.padding = '12px 8px';
+          cell.style.overflowWrap = 'anywhere';
+          row.append(cell);
+        }
+        const cell = document.createElement('td');
+        const button = document.createElement('button');
+        button.className = 'btn btn-text';
+        button.textContent = 'View';
+        button.addEventListener('click', async () => {
+          button.disabled = true;
+          try {
+            const result = await readApiResponse(await fetch(`/api/v1/reports/${encodeURIComponent(report.scan_id)}`));
+            if (request === historyRequest && !element('historySection').hidden) renderReport(result);
+          } catch (error) { setText('historyStatus', error.message); }
+          finally { button.disabled = false; }
+        });
+        cell.append(button); row.append(cell); element('historyRows').append(row);
+      }
+      setText('historyStatus', page.total ? `${historyOffset + 1}-${historyOffset + page.items.length} of ${page.total} scans` : 'No scans yet.');
+      element('historyPrevious').disabled = historyOffset === 0;
+      element('historyNext').disabled = historyOffset + page.items.length >= page.total;
+    } catch (error) {
+      if (request === historyRequest) setText('historyStatus', `Unable to load history: ${error.message}`);
+    }
+  }
+  element('historyNav').addEventListener('click', (event) => { event.preventDefault(); historyOffset = 0; showHistory(); });
+  element('scanNav').addEventListener('click', (event) => {
+    event.preventDefault(); ++historyRequest;
+    element('historySection').hidden = true;
+    element('dashboardSection').hidden = true;
+    element('heroSection').hidden = false;
+  });
+  element('refreshHistory').addEventListener('click', () => { historyOffset = 0; showHistory(); });
+  element('historyPrevious').addEventListener('click', () => { historyOffset = Math.max(0, historyOffset - 20); showHistory(); });
+  element('historyNext').addEventListener('click', () => { historyOffset += 20; showHistory(); });
   element('openModalBtn').addEventListener('click', openModal);
   element('scanAgainBtn').addEventListener('click', openModal);
   element('closeModalBtn').addEventListener('click', closeModal);

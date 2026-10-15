@@ -163,6 +163,19 @@ class ScanApiTests(unittest.TestCase):
         for scan_id in ("invalid", "0" * 32):
             self.assertEqual(self.client.get("/api/v1/reports/" + scan_id).status_code, 404)
 
+    def test_history_lists_persisted_reports_with_pagination(self):
+        self.assertEqual(self.client.get('/api/v1/reports').json()['total'], 0)
+        first = self.scan(filename='first.txt').json()
+        second = self.scan(filename='second.txt').json()
+        page = self.client.get('/api/v1/reports?limit=1').json()
+        self.assertEqual(page['total'], 2)
+        self.assertEqual(page['items'][0]['scan_id'], second['scan_id'])
+        next_page = self.client.get('/api/v1/reports?limit=1&offset=1').json()
+        self.assertEqual(next_page['items'][0]['scan_id'], first['scan_id'])
+        self.assertNotIn('threats', page['items'][0])
+        self.assertEqual(self.client.get('/api/v1/reports?offset=-1').status_code, 422)
+        self.assertEqual(self.client.get('/api/v1/reports?limit=101').status_code, 422)
+
 
 if __name__ == "__main__":
     unittest.main()
