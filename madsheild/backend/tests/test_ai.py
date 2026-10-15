@@ -1,6 +1,7 @@
 import json
 import math
 import unittest
+import struct
 from io import BytesIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -9,6 +10,7 @@ from zipfile import ZipFile
 
 import httpx
 from docx import Document
+from pypdf import PdfWriter
 
 from madsheild.backend.app import config
 from madsheild.backend.app.ai import feature_extractor
@@ -23,6 +25,26 @@ def docx_bytes(document):
     return buffer.getvalue()
 
 
+def pdf_bytes(*, encrypted=False):
+    writer = PdfWriter()
+    writer.add_blank_page(width=72, height=72)
+    if encrypted:
+        writer.encrypt("test-password")
+    buffer = BytesIO()
+    writer.write(buffer)
+    return buffer.getvalue()
+
+
+def pe_bytes():
+    content = bytearray(0x80)
+    content[:2] = b"MZ"
+    struct.pack_into("<I", content, 0x3C, 0x80)
+    content.extend(b"PE\0\0")
+    content.extend(struct.pack("<HHIIIHH", 0x14C, 0, 0, 0, 0, 0xE0, 0x0102))
+    content.extend(struct.pack("<H", 0x10B) + bytes(222))
+    return bytes(content)
+
+
 class FeatureExtractionTests(unittest.TestCase):
     def test_text_preserves_blank_lines_and_handles_bom(self):
         self.assertEqual(extract_txt_lines(b"\xef\xbb\xbffirst\r\n\r\nthird"), [
@@ -35,6 +57,11 @@ class FeatureExtractionTests(unittest.TestCase):
         for content in (b"\xff", b"hello\x00world"):
             with self.subTest(content=content), self.assertRaises(ValueError):
                 extract_txt_lines(content)
+
+    def test_additional_text_formats_preserve_line_locations(self):
+        result = extract_features(b'{"command": "powershell -enc dGVzdA=="}', ".json")
+        self.assertEqual(result["segments"][0]["line_number"], 1)
+        self.assertEqual(result["features"]["powershell_count"], 1)
 
     def test_limits_prevent_unbounded_extraction(self):
         with patch.object(feature_extractor, "MAX_TEXT_CHARACTERS", 3), self.assertRaises(ValueError):
@@ -83,6 +110,43 @@ class FeatureExtractionTests(unittest.TestCase):
         self.assertEqual(result["risk_score"], 100)
         self.assertEqual(len(result["findings"]), 2)
         self.assertTrue(all(f["location"]["scope"] == "document_archive" for f in result["findings"]))
+
+    def test_pdf_extracts_page_locations_and_reports_structure_markers(self):
+        result = extract_features(pdf_bytes() + b"\n/JavaScript", ".pdf")
+        self.assertEqual(result["segments"][0]["page_number"], 1)
+        self.assertEqual(result["features"]["pdf_javascript_count"], 1)
+        findings = rule_analysis(result["segments"], result["features"])["findings"]
+        self.assertEqual(findings[0]["location"]["scope"], "file_structure")
+
+    def test_pdf_rejects_encrypted_documents(self):
+        with self.assertRaises(ValueError):
+            extract_features(pdf_bytes(encrypted=True), ".pdf")
+
+    def test_zip_scans_supported_members_and_rejects_unsafe_paths(self):
+        buffer = BytesIO()
+        with ZipFile(buffer, "w") as archive:
+            archive.writestr("notes/alert.log", b"powershell -enc dGVzdA==")
+            archive.writestr("ignored.bin", b"not analyzed")
+        result = extract_features(buffer.getvalue(), ".zip")
+        self.assertEqual(result["features"]["archive_member_count"], 1)
+        self.assertEqual(result["segments"][0]["archive_member"], "notes/alert.log")
+        self.assertEqual(rule_analysis(result["segments"], result["features"])["risk_score"], 70)
+
+        unsafe = BytesIO()
+        with ZipFile(unsafe, "w") as archive:
+            archive.writestr("../outside.txt", b"ordinary notes")
+        with self.assertRaises(ValueError):
+            extract_features(unsafe.getvalue(), ".zip")
+
+    def test_pe_is_parsed_statically_and_rejects_invalid_content(self):
+        result = extract_features(pe_bytes(), ".exe")
+        self.assertEqual(result["features"]["pe_executable"], 1)
+        with self.assertRaises(ValueError):
+            extract_features(b"not an executable", ".exe")
+
+    def test_legacy_doc_rejects_non_ole_content(self):
+        with self.assertRaises(ValueError):
+            extract_features(b"not a legacy document", ".doc")
 
 
 class RuleAnalysisTests(unittest.TestCase):

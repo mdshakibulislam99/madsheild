@@ -74,6 +74,14 @@ def extract_and_analyze_task(filename: str, content: bytes, content_type: str | 
         "DOCX text analysis covers body paragraphs and tables, not headers, footers, images, or OCR.",
         "Model probabilities, when available, require independent validation; confidence is not calculated.",
     ]
+    if extension == ".pdf":
+        limitations.append("PDF analysis extracts available text per page and flags structural JavaScript/embedded-file markers. It does not OCR scanned pages or execute PDF actions.")
+    elif extension == ".doc":
+        limitations.append("Legacy DOC analysis checks OLE structure and readable strings only. It does not provide complete Word document text coverage.")
+    elif extension == ".zip":
+        limitations.append("ZIP analysis scans supported members within strict nesting, entry-count, expansion-size, and compression-ratio limits. Unsupported members are not analyzed.")
+    elif extension in {".exe", ".dll"}:
+        limitations.append("EXE/DLL analysis is static only: PE metadata, imported APIs, and readable strings are inspected. The file is never executed.")
     if model["status"] == "not_configured":
         limitations.append("No trained model is configured. This report contains static rules only; AI probability is unavailable.")
     elif model["status"] in {"failed", "skipped"}:

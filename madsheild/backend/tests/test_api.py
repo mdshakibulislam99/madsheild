@@ -127,8 +127,9 @@ class ScanApiTests(unittest.TestCase):
         self.assertFalse(self.uploads.exists())
 
     def test_invalid_uploads_do_not_create_storage(self):
-        cases = [(b"", "empty.txt", 400), (b"binary", "file.exe", 400),
-                 (b"\xff", "bad.txt", 422), (b"not docx", "bad.docx", 422)]
+        cases = [(b"", "empty.txt", 400), (b"binary", "file.unsupported", 400),
+                 (b"\xff", "bad.txt", 422), (b"not docx", "bad.docx", 422),
+                 (b"not an executable", "bad.exe", 422)]
         for content, filename, status in cases:
             with self.subTest(filename=filename):
                 response = self.scan(content, filename)

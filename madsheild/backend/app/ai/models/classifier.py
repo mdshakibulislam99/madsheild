@@ -47,9 +47,12 @@ def rule_analysis(segments: list[dict], features: dict) -> dict:
                     "location": {k: v for k, v in segment.items() if k != "text"},
                     "excerpt": segment["text"][start:start + 300],
                 })
-    for feature, rule_id, title, weight in (
-        ("macro_present", "embedded_macro", "Macro artifact in DOCX archive", 70),
-        ("embedded_object_count", "embedded_object", "Embedded objects in DOCX archive", 30),
+    for feature, rule_id, title, weight, scope in (
+        ("macro_present", "embedded_macro", "Macro artifact in Office document", 70, "document_archive"),
+        ("embedded_object_count", "embedded_object", "Embedded objects in Office document", 30, "document_archive"),
+        ("pdf_javascript_count", "pdf_javascript", "JavaScript marker in PDF", 70, "file_structure"),
+        ("pdf_embedded_file_count", "pdf_embedded_file", "Embedded file collection in PDF", 30, "file_structure"),
+        ("pe_suspicious_import_count", "pe_suspicious_import", "Suspicious Windows API imports", 30, "file_structure"),
     ):
         if features.get(feature, 0):
             weights[rule_id] = weight
@@ -59,7 +62,7 @@ def rule_analysis(segments: list[dict], features: dict) -> dict:
                     "source": "rules", "rule_id": rule_id, "title": title,
                     "severity": "high" if weight >= 70 else "medium",
                     "reason": "This archive artifact requires review; its presence alone does not prove malware.",
-                    "location": {"scope": "document_archive"}, "excerpt": "",
+                    "location": {"scope": scope}, "excerpt": "",
                 })
     return {"risk_score": min(100, sum(weights.values())), "findings": findings,
             "match_count": match_count, "findings_truncated": match_count > len(findings)}

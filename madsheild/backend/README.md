@@ -4,7 +4,7 @@ See [application setup and tests](../README.md). The application lives in `app/m
 
 ## Analysis and efficiency
 
-The extraction layer reads each document once. Rules use compiled patterns, return at most 100 findings, and preserve TXT line numbers and DOCX body/table paragraph locations. Archive-level findings do not claim a text location. Uploaded content is never executed.
+The extraction layer supports `.txt`, `.log`, `.csv`, `.json`, `.md`, `.doc`, `.docx`, `.pdf`, `.zip`, `.exe`, and `.dll`. Rules use compiled patterns, return at most 100 findings, and preserve text line numbers, DOCX body/table paragraph locations, PDF page numbers, and ZIP member paths. Uploaded content is never executed.
 
 `workers/tasks.py` coordinates extraction, static rules, optional model inference, storage, and reports. Work runs in a thread pool, with a bounded number of active scans; it does not require Celery or Redis.
 
@@ -23,6 +23,10 @@ Set environment variables before starting the server. A `.env` file is not loade
 | `MAX_TEXT_CHARACTERS` | 2000000 | Extracted text limit |
 | `MAX_TEXT_SEGMENTS` | 20000 | Extracted line/paragraph limit |
 | `MAX_DOCX_EXPANDED_BYTES` | 52428800 | Maximum expanded DOCX archive size |
+| `MAX_PDF_PAGES` | 500 | Maximum pages read from one PDF |
+| `MAX_ARCHIVE_MEMBERS` | 2048 | Maximum non-directory ZIP entries |
+| `MAX_ARCHIVE_EXPANDED_BYTES` | 52428800 | Maximum expanded ZIP size |
+| `MAX_ARCHIVE_DEPTH` | 2 | Maximum nested ZIP levels |
 | `MAX_CONCURRENT_SCANS` | 2 | Active scans allowed in one process |
 | `ANALYSIS_CACHE_SIZE` | 64 | Cached document analyses |
 | `ANALYSIS_CACHE_TTL_SECONDS` | 300 | Cache lifetime |
@@ -35,7 +39,7 @@ Set environment variables before starting the server. A `.env` file is not loade
 | `MODEL_MAX_TEXT_CHARACTERS` | 64000 | Maximum text sent to the service |
 | `MODEL_THRESHOLD` | 0.8 | Probability threshold for the suspicious verdict |
 
-DOCX archives also have entry-count, per-entry, expansion-ratio, encryption, and XML declaration checks. Invalid inputs produce HTTP 4xx responses. When all scan slots are occupied, the server returns 503 with `Retry-After: 2`.
+DOCX and ZIP archives have entry-count, per-entry, expansion-ratio, encryption, and unsafe-path checks. Encrypted PDFs are rejected. Legacy DOC uses OLE structure plus readable strings; EXE/DLL uses static PE metadata, imports, and readable strings. Invalid inputs produce HTTP 4xx responses. When all scan slots are occupied, the server returns 503 with `Retry-After: 2`.
 
 ## Existing local model
 
@@ -51,7 +55,7 @@ The built-in local adapter accepts a JSON linear/logistic classifier, with:
 
 Inference calculates `sigmoid(bias + sum(weight * (feature - mean) / scale))`. The artifact must define the positive class as malicious and use the same feature extraction as this backend. This interface cannot infer preprocessing from an arbitrary model file.
 
-Supported features are `byte_entropy`, `text_length`, `segment_count`, `url_count`, `powershell_count`, `encoded_command_count`, `dynamic_execution_count`, `download_count`, `shadow_delete_count`, `macro_present`, and `embedded_object_count`. Entropy uses raw uploaded bytes; text length uses newline-joined extracted segments. Pattern counts use the expressions in `ai/feature_extractor.py`.
+Supported features are the names in `ai/feature_extractor.py`, including text-pattern counts, Office archive markers, ZIP member count, PDF structural markers, and PE type/import markers. Entropy uses raw uploaded bytes; text length uses newline-joined extracted segments. Pattern counts use the expressions in `ai/feature_extractor.py`.
 
 The artifact is loaded once and reloaded when its path modification time or size changes. JSON avoids executable pickle loading. PyTorch, pickle, and other model formats require an adapter matching the owner's model; renaming a file to JSON does not convert it. No real weights are included.
 
@@ -100,7 +104,7 @@ Requests have a timeout and a 1 MiB response-size limit. Redirects are disabled.
 
 ## Storage and reports
 
-Uploads are stored as `storage/uploads/<32-character-scan-id>/<random-name>.txt` or `.docx`, with restricted directory/file permissions where supported. Original names remain metadata; they do not control the storage path. Reports use atomic replacement of `report.json` in the same scan directory. Uploads, reports, credentials, and model weights are ignored by Git and container build context.
+Uploads are stored as `storage/uploads/<32-character-scan-id>/<random-name><extension>`, with restricted directory/file permissions where supported. Original names remain metadata; they do not control the storage path. Reports use atomic replacement of `report.json` in the same scan directory. Uploads, reports, credentials, and model weights are ignored by Git and container build context.
 
 `analysis.cache_hit` identifies reuse. On a hit, extraction/rules/model timings are omitted because those stages did not run; `analysis.timings_ms.analysis` measures the current cache lookup. `analysis.timings_ms.total` includes current analysis and upload persistence before report JSON is written; it excludes HTTP transfer and browser rendering. Performance measurements do not establish accuracy or calibrated confidence.
 

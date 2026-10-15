@@ -3,3 +3,6 @@ uvicorn[standard]
 python-multipart
 python-docx>=1.2,<2
 httpx>=0.28,<1
+olefile>=0.47,<1
+pefile>=2024.8.26,<2026
+pypdf>=5,<7

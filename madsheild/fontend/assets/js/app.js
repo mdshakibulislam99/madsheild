@@ -11,7 +11,7 @@
   let maxFileSize = 10 * 1024 * 1024;
   let maxBatchFiles = 100;
   let maxBatchSize = 100 * 1024 * 1024;
-  let allowedExtensions = ['.txt', '.docx'];
+  let allowedExtensions = ['.txt', '.log', '.csv', '.json', '.md', '.doc', '.docx', '.pdf', '.zip', '.exe', '.dll'];
 
   function setText(id, text) { element(id).textContent = text; }
   function formatSize(bytes) {
@@ -86,10 +86,15 @@
   }
   function describeLocation(location = {}) {
     if (location.scope === 'document_archive') return 'DOCX archive';
+    if (location.scope === 'file_structure') return 'File structure';
+    if (location.scope === 'legacy_doc_string') return 'Legacy DOC readable string';
+    if (location.scope === 'pe_string') return 'PE readable string';
     if (location.scope === 'whole_document') return 'Whole document';
     const parts = [];
+    if (location.archive_member) parts.push(`Archive member: ${location.archive_member}`);
     if (location.line_number) parts.push(`Line ${location.line_number}`);
     if (location.paragraph_number) parts.push(`Paragraph ${location.paragraph_number}`);
+    if (location.page_number) parts.push(`Page ${location.page_number}`);
     for (const table of location.table_location || []) {
       parts.push(`Table ${table.table_number}, row ${table.row_number}, cell ${table.cell_number}`);
     }

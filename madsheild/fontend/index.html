@@ -86,12 +86,12 @@
         <p class="upload-subtext">Add files or a folder to analyze</p>
         <div id="dropZone" class="drop-zone">
           <div id="defaultContent" class="dz-content"><p class="drop-text">Drop files or a folder here</p><p class="browse-options"><a href="#" id="browseLink">Choose files</a><span>or</span><a href="#" id="browseFolderLink">Choose folder</a></p></div>
-          <input type="file" id="fileInput" accept=".txt,.docx" multiple hidden>
-          <input type="file" id="folderInput" accept=".txt,.docx" webkitdirectory directory multiple hidden>
+          <input type="file" id="fileInput" accept=".txt,.log,.csv,.json,.md,.doc,.docx,.pdf,.zip,.exe,.dll" multiple hidden>
+          <input type="file" id="folderInput" accept=".txt,.log,.csv,.json,.md,.doc,.docx,.pdf,.zip,.exe,.dll" webkitdirectory directory multiple hidden>
           <div id="successContent" hidden><p id="successFileName" class="file-name-text"></p><p class="status-msg success-msg">Ready to scan</p><a href="#" id="changeFileLink">Choose different files</a></div>
           <div id="errorContent" hidden><p id="errorFileName" class="file-name-text"></p><p id="errorMessage" class="status-msg error-msg" role="alert"></p><a href="#" id="retryLink">Browse again</a></div>
         </div>
-        <p id="supportedFilesText" class="supported-files">Supported files: .txt and .docx (maximum 10 MB per file)</p>
+        <p id="supportedFilesText" class="supported-files">Supported files: .txt, .log, .csv, .json, .md, .doc, .docx, .pdf, .zip, .exe, and .dll (maximum 10 MB per file)</p>
         <button id="continueBtn" class="btn btn-continue" disabled>Analyze files</button>
       </div>
       <div id="analyzingStepView" hidden>

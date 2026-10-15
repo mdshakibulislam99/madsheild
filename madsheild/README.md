@@ -1,6 +1,6 @@
 # MadShield
 
-A local document security analyzer with a FastAPI backend and an HTML/JavaScript frontend served on the same port. It analyzes individual files or folders containing `.txt` and `.docx` files with static rules and can run inference using an existing model. It does not train a model or execute uploaded content.
+A local document security analyzer with a FastAPI backend and an HTML/JavaScript frontend served on the same port. It analyzes individual files or folders containing `.txt`, `.log`, `.csv`, `.json`, `.md`, `.doc`, `.docx`, `.pdf`, `.zip`, `.exe`, and `.dll` files with static rules and can run inference using an existing model. It does not train a model or execute uploaded content.
 
 ## Start locally
 
@@ -27,8 +27,8 @@ Keep the terminal open. Visit [the application](http://127.0.0.1:8001/), [API do
 ## Analysis workflow
 
 1. Validate filenames, extensions, file count, and actual upload sizes (10 MiB per file, 100 files and 100 MiB per batch by default).
-2. Extract UTF-8 TXT lines or DOCX body/table paragraphs, keeping blank positions and recording line or paragraph numbers.
-3. Check static indicators such as encoded PowerShell, download-and-execute commands, shadow-copy deletion, dynamic execution, macros, and embedded objects.
+2. Extract UTF-8 text lines, DOCX body/table paragraphs, PDF pages, supported ZIP members, legacy DOC readable strings, or PE metadata/imports/strings, preserving available locations.
+3. Check static indicators such as encoded PowerShell, download-and-execute commands, shadow-copy deletion, dynamic execution, Office macros/objects, PDF structural markers, and suspicious Windows API imports.
 4. Optionally run an existing model. Rule findings and model predictions have separate sources and coverage information.
 5. Save the quarantined upload and its report, then display the report in the browser.
 
@@ -125,4 +125,4 @@ Container reports are ephemeral unless a writable volume is mounted at `/srv/mad
 
 This is a local development application without authentication or automatic storage retention. Keep it bound to loopback; saved reports and uploads need manual cleanup. Quarantine storage is not an operating-system execution sandbox.
 
-TXT input must be UTF-8. DOCX analysis covers body/table text and archive indicators; it does not inspect headers, footers, OCR, or the contents of embedded files. Folder input scans supported files recursively and reports unsupported or unreadable input rather than analyzing it. PDF and executable-file analysis, production deployment controls, and model training are outside this stage. The repository supplies no trained weights, labeled dataset, or accuracy benchmark.
+Text-based input must be UTF-8. DOCX analysis covers body/table text and archive indicators; it does not inspect headers, footers, OCR, or the contents of embedded files. PDF analysis extracts available text and reports structural markers, without OCR or action execution. Legacy DOC coverage is limited to OLE structure and readable strings. EXE/DLL analysis is static only and never runs code. ZIP analysis is bounded by nesting, member-count, expansion-size, and compression-ratio limits. Folder input scans supported files recursively and reports unsupported or unreadable input rather than analyzing it. Production deployment controls and model training are outside this stage. The repository supplies no trained weights, labeled dataset, or accuracy benchmark.
