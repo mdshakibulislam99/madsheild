@@ -87,6 +87,7 @@ def extract_and_analyze_task(filename: str, content: bytes, content_type: str | 
     findings = [{**finding, "filename": saved["filename"]} for finding in rules["findings"] + model["findings"]]
     report = {"scan_id": scan_id, "status": "completed", "created_at": datetime.now(timezone.utc).isoformat(),
               "filename": saved["filename"], "content_type": content_type, "size_bytes": saved["size_bytes"],
+              "relative_path": saved["relative_path"],
               "sha256": saved["sha256"], "verdict": verdict, "risk_score": rules["risk_score"],
               "risk_score_type": "heuristic_rule_score", "malware_probability": probability, "confidence": None,
               "threats": findings, "summary": {"suspicious": "Suspicious indicators found. Review the findings.",

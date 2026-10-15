@@ -23,7 +23,7 @@
       <div class="hero-container">
         <h1 class="hero-title">Welcome to MadSheild</h1>
         <p class="hero-subtitle">Analyze your document for suspicious content</p>
-        <button id="openModalBtn" class="btn btn-primary upload-btn-lg">Upload file</button>
+        <button id="openModalBtn" class="btn btn-primary upload-btn-lg">Upload files</button>
       </div>
     </section>
 
@@ -33,6 +33,13 @@
         <h3 id="resultVerdict" class="result-title"></h3>
         <p id="resultSummary" class="status-subtext"></p>
       </div>
+      <section id="batchSummary" class="batch-summary" hidden>
+        <div><strong id="batchCompleted">0</strong><span>Analyzed</span></div>
+        <div><strong id="batchSuspicious">0</strong><span>Suspicious</span></div>
+        <div><strong id="batchReview">0</strong><span>Review</span></div>
+        <div><strong id="batchFailed">0</strong><span>Failed</span></div>
+        <div id="batchFileList" class="batch-file-list"></div>
+      </section>
       <div class="details-grid">
         <div class="detail-card">
           <h3 class="card-header">File details</h3>
@@ -65,7 +72,7 @@
         <ul id="limitationsList"></ul>
       </section>
       <div class="result-actions">
-        <button id="scanAgainBtn" class="btn btn-primary">Scan another file</button>
+        <button id="scanAgainBtn" class="btn btn-primary">Scan more files</button>
         <a id="reportLink" class="btn btn-text" target="_blank" rel="noopener">View JSON report</a>
       </div>
     </section>
@@ -73,18 +80,19 @@
 
   <div id="uploadModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
     <div class="upload-card">
-      <div class="upload-header"><h2 id="modalTitle">Upload file</h2><button id="closeModalBtn" class="close-btn" aria-label="Close">×</button></div>
+      <div class="upload-header"><h2 id="modalTitle">Upload files</h2><button id="closeModalBtn" class="close-btn" aria-label="Close">×</button></div>
       <hr class="upload-divider">
       <div id="uploadStepView">
-        <p class="upload-subtext">Add your file or document here</p>
+        <p class="upload-subtext">Add files or a folder to analyze</p>
         <div id="dropZone" class="drop-zone">
-          <div id="defaultContent" class="dz-content"><p class="drop-text">Drop a file here or <a href="#" id="browseLink">browse</a></p></div>
-          <input type="file" id="fileInput" accept=".txt,.docx" hidden>
-          <div id="successContent" hidden><p id="successFileName" class="file-name-text"></p><p class="status-msg success-msg">File selected</p><a href="#" id="changeFileLink">Choose another file</a></div>
+          <div id="defaultContent" class="dz-content"><p class="drop-text">Drop files or a folder here</p><p class="browse-options"><a href="#" id="browseLink">Choose files</a><span>or</span><a href="#" id="browseFolderLink">Choose folder</a></p></div>
+          <input type="file" id="fileInput" accept=".txt,.docx" multiple hidden>
+          <input type="file" id="folderInput" accept=".txt,.docx" webkitdirectory directory multiple hidden>
+          <div id="successContent" hidden><p id="successFileName" class="file-name-text"></p><p class="status-msg success-msg">Ready to scan</p><a href="#" id="changeFileLink">Choose different files</a></div>
           <div id="errorContent" hidden><p id="errorFileName" class="file-name-text"></p><p id="errorMessage" class="status-msg error-msg" role="alert"></p><a href="#" id="retryLink">Browse again</a></div>
         </div>
         <p id="supportedFilesText" class="supported-files">Supported files: .txt and .docx (maximum 10 MB per file)</p>
-        <button id="continueBtn" class="btn btn-continue" disabled>Continue</button>
+        <button id="continueBtn" class="btn btn-continue" disabled>Analyze files</button>
       </div>
       <div id="analyzingStepView" hidden>
         <div class="analyzing-card-inner">

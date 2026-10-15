@@ -3,11 +3,14 @@
   const element = (id) => document.getElementById(id);
   const modal = element('uploadModal');
   const fileInput = element('fileInput');
+  const folderInput = element('folderInput');
   const continueBtn = element('continueBtn');
-  let selectedFile = null;
+  let selectedFiles = [];
   let activeRequest = null;
   let previousFocus = null;
   let maxFileSize = 10 * 1024 * 1024;
+  let maxBatchFiles = 100;
+  let maxBatchSize = 100 * 1024 * 1024;
   let allowedExtensions = ['.txt', '.docx'];
 
   function setText(id, text) { element(id).textContent = text; }
@@ -28,24 +31,45 @@
     continueBtn.disabled = state !== 'success';
     continueBtn.classList.toggle('btn-active', state === 'success');
   }
-  function selectFile(file) {
-    selectedFile = null;
-    const extension = `.${file.name.split('.').pop().toLowerCase()}`;
-    if (!allowedExtensions.includes(extension)) {
-      showSelection('error', `Supported files: ${allowedExtensions.join(', ')}.`, file.name);
-    } else if (!file.size) {
-      showSelection('error', 'The file is empty.', file.name);
-    } else if (file.size > maxFileSize) {
-      showSelection('error', `The file exceeds the ${formatSize(maxFileSize)} limit.`, file.name);
-    } else {
-      selectedFile = file;
-      showSelection('success', '', file.name);
+  function selectFiles(items) {
+    selectedFiles = [];
+    const unique = new Map();
+    for (const item of items) {
+      const file = item.file || item;
+      const relativePath = (item.relativePath || file.webkitRelativePath || file.name).replaceAll('\\', '/');
+      unique.set(`${relativePath}:${file.size}:${file.lastModified}`, { file, relativePath });
     }
+    const files = [...unique.values()];
+    if (!files.length) return showSelection('error', 'No files were selected.');
+    if (files.length > maxBatchFiles) {
+      return showSelection('error', `Select no more than ${maxBatchFiles} files.`);
+    }
+    let totalSize = 0;
+    for (const item of files) {
+      const extension = `.${item.file.name.split('.').pop().toLowerCase()}`;
+      if (!allowedExtensions.includes(extension)) {
+        return showSelection('error', `Unsupported file: ${item.relativePath}. Supported files: ${allowedExtensions.join(', ')}.`);
+      }
+      if (!item.file.size) return showSelection('error', `Empty file: ${item.relativePath}.`);
+      if (item.file.size > maxFileSize) {
+        return showSelection('error', `${item.relativePath} exceeds the ${formatSize(maxFileSize)} per-file limit.`);
+      }
+      totalSize += item.file.size;
+    }
+    if (totalSize > maxBatchSize) {
+      return showSelection('error', `The selection exceeds the ${formatSize(maxBatchSize)} batch limit.`);
+    }
+    selectedFiles = files;
+    const label = files.length === 1
+      ? files[0].relativePath
+      : `${files.length} files selected (${formatSize(totalSize)})`;
+    showSelection('success', '', label);
   }
   function openModal() {
     previousFocus = document.activeElement;
-    selectedFile = null;
+    selectedFiles = [];
     fileInput.value = '';
+    folderInput.value = '';
     element('uploadStepView').hidden = false;
     element('analyzingStepView').hidden = true;
     showSelection('default');
@@ -72,7 +96,11 @@
     if (location.character_offset) parts.push(`Character offset ${location.character_offset}`);
     return parts.join(' · ') || 'Document';
   }
-  function renderReport(report) {
+  function renderReport(report, preserveBatch = false) {
+    if (!preserveBatch) element('batchSummary').hidden = true;
+    document.querySelector('.details-grid').hidden = false;
+    document.querySelector('.findings-section').hidden = false;
+    document.querySelector('.limitations-section').hidden = false;
     const titles = {
       suspicious: 'Suspicious content found',
       review_required: 'Review recommended',
@@ -137,6 +165,70 @@
     element('dashboardSection').scrollIntoView({ block: 'start' });
   }
 
+  function renderBatch(batch) {
+    setText('batchCompleted', String(batch.completed_files));
+    setText('batchSuspicious', String(batch.suspicious_files));
+    setText('batchReview', String(batch.review_required_files));
+    setText('batchFailed', String(batch.failed_files));
+    const list = element('batchFileList');
+    list.replaceChildren();
+    for (const report of batch.reports) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `batch-file ${report.verdict}`;
+      button.textContent = report.relative_path || report.filename;
+      button.addEventListener('click', () => renderReport(report, true));
+      list.append(button);
+    }
+    for (const failure of batch.errors) {
+      const item = document.createElement('span');
+      item.className = 'batch-file failed';
+      item.textContent = `${failure.relative_path}: ${failure.error}`;
+      list.append(item);
+    }
+    element('batchSummary').hidden = false;
+    if (batch.reports.length) {
+      renderReport(batch.reports[0], true);
+      return;
+    }
+    setText('resultVerdict', 'No files could be analyzed');
+    setText('resultSummary', 'Review the file errors below and try again with valid documents.');
+    element('resultBanner').className = 'result-banner suspicious';
+    document.querySelector('.details-grid').hidden = true;
+    document.querySelector('.findings-section').hidden = true;
+    document.querySelector('.limitations-section').hidden = true;
+    element('reportLink').hidden = true;
+    element('heroSection').hidden = true;
+    element('dashboardSection').hidden = false;
+    closeModal();
+    element('dashboardSection').scrollIntoView({ block: 'start' });
+  }
+
+  async function readEntry(entry, prefix = '') {
+    if (entry.isFile) {
+      const file = await new Promise((resolve, reject) => entry.file(resolve, reject));
+      return [{ file, relativePath: `${prefix}${file.name}` }];
+    }
+    if (!entry.isDirectory) return [];
+    const reader = entry.createReader();
+    const entries = [];
+    while (true) {
+      const page = await new Promise((resolve, reject) => reader.readEntries(resolve, reject));
+      if (!page.length) break;
+      entries.push(...page);
+    }
+    const nested = await Promise.all(entries.map((child) => readEntry(child, `${prefix}${entry.name}/`)));
+    return nested.flat();
+  }
+
+  async function droppedItems(dataTransfer) {
+    const entries = [...dataTransfer.items]
+      .map((item) => item.webkitGetAsEntry?.())
+      .filter(Boolean);
+    if (!entries.length) return [...dataTransfer.files].map((file) => ({ file, relativePath: file.name }));
+    return (await Promise.all(entries.map((entry) => readEntry(entry)))).flat();
+  }
+
   element('openModalBtn').addEventListener('click', openModal);
   element('scanAgainBtn').addEventListener('click', openModal);
   element('closeModalBtn').addEventListener('click', closeModal);
@@ -165,31 +257,39 @@
       event.preventDefault(); fileInput.value = ''; fileInput.click();
     });
   }
-  fileInput.addEventListener('change', () => { if (fileInput.files.length) selectFile(fileInput.files[0]); });
+  element('browseFolderLink').addEventListener('click', (event) => {
+    event.preventDefault(); folderInput.value = ''; folderInput.click();
+  });
+  fileInput.addEventListener('change', () => { if (fileInput.files.length) selectFiles(fileInput.files); });
+  folderInput.addEventListener('change', () => { if (folderInput.files.length) selectFiles(folderInput.files); });
   const dropZone = element('dropZone');
   dropZone.addEventListener('dragover', (event) => {
     event.preventDefault(); dropZone.classList.add('drag-over');
   });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-  dropZone.addEventListener('drop', (event) => {
+  dropZone.addEventListener('drop', async (event) => {
     event.preventDefault(); dropZone.classList.remove('drag-over');
-    if (event.dataTransfer.files.length === 1) selectFile(event.dataTransfer.files[0]);
-    else { selectedFile = null; showSelection('error', 'Please upload one file at a time.'); }
+    try {
+      selectFiles(await droppedItems(event.dataTransfer));
+    } catch (error) {
+      selectedFiles = [];
+      showSelection('error', 'The dropped folder could not be read.');
+    }
   });
   continueBtn.addEventListener('click', async () => {
-    if (!selectedFile || activeRequest) return;
-    const file = selectedFile;
+    if (!selectedFiles.length || activeRequest) return;
+    const files = [...selectedFiles];
     const request = new AbortController();
     activeRequest = request;
     element('uploadStepView').hidden = true;
     element('analyzingStepView').hidden = false;
-    setText('analyzingFileName', file.name);
+    setText('analyzingFileName', files.length === 1 ? files[0].relativePath : `${files.length} files`);
     element('closeModalBtn').focus();
     try {
-      const report = await scanFile(file, request.signal);
+      const batch = await scanFiles(files, request.signal);
       if (activeRequest !== request) return;
       activeRequest = null;
-      renderReport(report);
+      renderBatch(batch);
     } catch (error) {
       if (activeRequest !== request) return;
       activeRequest = null;
@@ -199,15 +299,18 @@
       const message = error instanceof TypeError
         ? 'Unable to reach the server. Check that the application is running and try again.'
         : error.message;
-      showSelection('error', message, file.name);
+      showSelection('error', message, files.length === 1 ? files[0].relativePath : `${files.length} files`);
       element('retryLink').focus();
     }
   });
   getCapabilities().then((capabilities) => {
     maxFileSize = capabilities.max_file_size_bytes;
+    maxBatchFiles = capabilities.max_batch_files;
+    maxBatchSize = capabilities.max_batch_size_bytes;
     allowedExtensions = capabilities.supported_extensions;
     fileInput.accept = allowedExtensions.join(',');
-    setText('supportedFilesText', `Supported files: ${allowedExtensions.join(' and ')} (maximum ${formatSize(maxFileSize)} per file)`);
-    if (selectedFile && !activeRequest) selectFile(selectedFile);
+    folderInput.accept = allowedExtensions.join(',');
+    setText('supportedFilesText', `Supported files: ${allowedExtensions.join(' and ')} · up to ${maxBatchFiles} files · ${formatSize(maxFileSize)} per file`);
+    if (selectedFiles.length && !activeRequest) selectFiles(selectedFiles);
   }).catch(() => { /* The server also validates each upload. */ });
 })();

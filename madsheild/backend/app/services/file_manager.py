@@ -14,7 +14,8 @@ def validate_file(filename: str, size_bytes: int) -> str:
         raise ValueError("A valid filename is required.")
     extension = Path(filename).suffix.lower()
     if extension not in ALLOWED_EXTENSIONS:
-        raise ValueError("Only .txt and .docx files are supported.")
+        supported = ", ".join(sorted(ALLOWED_EXTENSIONS))
+        raise ValueError(f"Only {supported} files are supported.")
     if size_bytes <= 0:
         raise ValueError("Empty files are not supported.")
     if size_bytes > MAX_FILE_SIZE_BYTES:
@@ -42,10 +43,18 @@ def save_uploaded_file(filename: str, content: bytes, scan_id: str) -> dict:
     (directory / stored_name).chmod(0o600)
     return {
         "filename": filename.replace("\\", "/").rsplit("/", 1)[-1],
+        "relative_path": sanitize_relative_path(filename),
         "stored_name": stored_name,
         "size_bytes": len(content),
         "sha256": calculate_sha256(content),
     }
+
+
+def sanitize_relative_path(filename: str) -> str:
+    """Keep a display-only relative path without allowing traversal semantics."""
+    normalized = filename.replace("\\", "/")
+    parts = [part for part in normalized.split("/") if part not in {"", ".", ".."}]
+    return "/".join(parts) or Path(filename).name
 
 
 def save_report(report: dict) -> None:

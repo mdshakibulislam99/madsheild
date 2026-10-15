@@ -18,6 +18,8 @@ Set environment variables before starting the server. A `.env` file is not loade
 | --- | --- | --- |
 | `STORAGE_DIR` | `backend/storage` | Upload/report location; prefer an absolute path |
 | `MAX_FILE_SIZE_BYTES` | 10485760 | Maximum size of one upload |
+| `MAX_BATCH_FILES` | 100 | Maximum files in one batch or folder scan |
+| `MAX_BATCH_SIZE_BYTES` | 104857600 | Maximum combined size of one batch |
 | `MAX_TEXT_CHARACTERS` | 2000000 | Extracted text limit |
 | `MAX_TEXT_SEGMENTS` | 20000 | Extracted line/paragraph limit |
 | `MAX_DOCX_EXPANDED_BYTES` | 52428800 | Maximum expanded DOCX archive size |
@@ -102,4 +104,4 @@ Uploads are stored as `storage/uploads/<32-character-scan-id>/<random-name>.txt`
 
 `analysis.cache_hit` identifies reuse. On a hit, extraction/rules/model timings are omitted because those stages did not run; `analysis.timings_ms.analysis` measures the current cache lookup. `analysis.timings_ms.total` includes current analysis and upload persistence before report JSON is written; it excludes HTTP transfer and browser rendering. Performance measurements do not establish accuracy or calibrated confidence.
 
-Authentication, a user-history listing, folder/batch input, automatic retention, and production deployment controls remain future stages.
+Authentication, a user-history listing, automatic retention, and production deployment controls remain future stages. The batch endpoint analyzes each supported file independently and retains display-only relative paths; it does not execute or recreate the uploaded directory tree on disk.

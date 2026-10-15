@@ -81,6 +81,51 @@ class ScanApiTests(unittest.TestCase):
         self.assertFalse(first["analysis"]["cache_hit"])
         self.assertTrue(second["analysis"]["cache_hit"])
 
+    def test_batch_scan_preserves_paths_and_summarizes_results(self):
+        response = self.client.post("/api/v1/scans/batch", files=[
+            ("files", ("notes/clean.txt", b"ordinary meeting notes", "text/plain")),
+            ("files", ("scripts/alert.txt", b"powershell -enc dGVzdA==", "text/plain")),
+        ])
+        self.assertEqual(response.status_code, 200, response.text)
+        batch = response.json()
+        self.assertEqual(batch["status"], "completed")
+        self.assertEqual(batch["total_files"], 2)
+        self.assertEqual(batch["completed_files"], 2)
+        self.assertEqual(batch["suspicious_files"], 1)
+        self.assertEqual(batch["no_indicators_files"], 1)
+        self.assertEqual(
+            {report["relative_path"] for report in batch["reports"]},
+            {"notes/clean.txt", "scripts/alert.txt"},
+        )
+
+    def test_batch_scan_returns_per_file_extraction_errors(self):
+        response = self.client.post("/api/v1/scans/batch", files=[
+            ("files", ("clean.txt", b"ordinary notes", "text/plain")),
+            ("files", ("broken.docx", b"not a document", "application/octet-stream")),
+        ])
+        self.assertEqual(response.status_code, 200, response.text)
+        batch = response.json()
+        self.assertEqual(batch["status"], "completed_with_errors")
+        self.assertEqual(batch["completed_files"], 1)
+        self.assertEqual(batch["failed_files"], 1)
+        self.assertEqual(batch["errors"][0]["relative_path"], "broken.docx")
+
+    def test_batch_limits_are_enforced_before_analysis(self):
+        with patch.object(config, "MAX_BATCH_FILES", 1):
+            response = self.client.post("/api/v1/scans/batch", files=[
+                ("files", ("one.txt", b"one", "text/plain")),
+                ("files", ("two.txt", b"two", "text/plain")),
+            ])
+        self.assertEqual(response.status_code, 413)
+        self.assertFalse(self.uploads.exists())
+
+        with patch.object(config, "MAX_BATCH_SIZE_BYTES", 3):
+            response = self.client.post("/api/v1/scans/batch", files=[
+                ("files", ("one.txt", b"four", "text/plain")),
+            ])
+        self.assertEqual(response.status_code, 413)
+        self.assertFalse(self.uploads.exists())
+
     def test_invalid_uploads_do_not_create_storage(self):
         cases = [(b"", "empty.txt", 400), (b"binary", "file.exe", 400),
                  (b"\xff", "bad.txt", 422), (b"not docx", "bad.docx", 422)]

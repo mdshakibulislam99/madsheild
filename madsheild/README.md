@@ -1,6 +1,6 @@
 # MadShield
 
-A local document security analyzer with a FastAPI backend and an HTML/JavaScript frontend served on the same port. It analyzes `.txt` and `.docx` files with static rules and can run inference using an existing model. It does not train a model or execute uploaded content.
+A local document security analyzer with a FastAPI backend and an HTML/JavaScript frontend served on the same port. It analyzes individual files or folders containing `.txt` and `.docx` files with static rules and can run inference using an existing model. It does not train a model or execute uploaded content.
 
 ## Start locally
 
@@ -26,7 +26,7 @@ Keep the terminal open. Visit [the application](http://127.0.0.1:8001/), [API do
 
 ## Analysis workflow
 
-1. Validate the filename, extension, and actual upload size (10 MiB per file by default).
+1. Validate filenames, extensions, file count, and actual upload sizes (10 MiB per file, 100 files and 100 MiB per batch by default).
 2. Extract UTF-8 TXT lines or DOCX body/table paragraphs, keeping blank positions and recording line or paragraph numbers.
 3. Check static indicators such as encoded PowerShell, download-and-execute commands, shadow-copy deletion, dynamic execution, macros, and embedded objects.
 4. Optionally run an existing model. Rule findings and model predictions have separate sources and coverage information.
@@ -41,6 +41,7 @@ Identical content can reuse an in-memory analysis result for five minutes (up to
 | Endpoint | Purpose |
 | --- | --- |
 | `POST /api/v1/scans` | Analyze one multipart file using the field name **file** |
+| `POST /api/v1/scans/batch` | Analyze multipart files using repeated **files** fields; preserves safe relative folder paths in reports |
 | `GET /api/v1/reports/{scan_id}` | Retrieve a saved report |
 | `GET /api/v1/capabilities` | Supported extensions, size limit, concurrency, and model mode |
 | `GET /health` | Check whether the server is running |
@@ -49,6 +50,14 @@ Example upload:
 
 ```sh
 curl -F "file=@/absolute/path/example.txt" http://127.0.0.1:8001/api/v1/scans
+```
+
+Example batch upload:
+
+```sh
+curl -F "files=@/absolute/path/one.txt;filename=folder/one.txt" \
+  -F "files=@/absolute/path/two.docx;filename=folder/two.docx" \
+  http://127.0.0.1:8001/api/v1/scans/batch
 ```
 
 Reports include metadata, SHA-256, a verdict (`suspicious`, `review_required`, or `no_indicators_found`), findings with locations, model status/coverage, limitations, cache status, and timings. `timings_ms.total` measures server work before report JSON persistence, excluding network transfer. See [backend configuration and model contracts](backend/README.md).
@@ -116,4 +125,4 @@ Container reports are ephemeral unless a writable volume is mounted at `/srv/mad
 
 This is a local development application without authentication or automatic storage retention. Keep it bound to loopback; saved reports and uploads need manual cleanup. Quarantine storage is not an operating-system execution sandbox.
 
-TXT input must be UTF-8. DOCX analysis covers body/table text and archive indicators; it does not inspect headers, footers, OCR, or the contents of embedded files. PDF, executable-file analysis, folder/batch scans, production deployment controls, and model training are outside this stage. The repository supplies no trained weights, labeled dataset, or accuracy benchmark.
+TXT input must be UTF-8. DOCX analysis covers body/table text and archive indicators; it does not inspect headers, footers, OCR, or the contents of embedded files. Folder input scans supported files recursively and reports unsupported or unreadable input rather than analyzing it. PDF and executable-file analysis, production deployment controls, and model training are outside this stage. The repository supplies no trained weights, labeled dataset, or accuracy benchmark.

@@ -24,3 +24,13 @@ async function scanFile(file, signal) {
     method: 'POST', body: formData, signal,
   }));
 }
+
+async function scanFiles(files, signal) {
+  const formData = new FormData();
+  for (const item of files) {
+    formData.append('files', item.file, item.relativePath || item.file.name);
+  }
+  return readApiResponse(await fetch('/api/v1/scans/batch', {
+    method: 'POST', body: formData, signal,
+  }));
+}
