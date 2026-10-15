@@ -19,6 +19,14 @@
       ? `${(bytes / (1024 * 1024)).toFixed(2)} MB`
       : `${(bytes / 1024).toFixed(2)} KB`;
   }
+  function formatExtensions(extensions) {
+    return new Intl.ListFormat('en', { style: 'long', type: 'conjunction' }).format(extensions);
+  }
+  function isIgnoredSystemFile(relativePath) {
+    const parts = relativePath.split('/');
+    const filename = parts.at(-1).toLowerCase();
+    return filename === '.ds_store' || filename === 'thumbs.db' || parts.includes('__MACOSX');
+  }
   function showSelection(state, message = '', filename = '') {
     element('defaultContent').hidden = state !== 'default';
     element('successContent').hidden = state !== 'success';
@@ -39,7 +47,7 @@
       const relativePath = (item.relativePath || file.webkitRelativePath || file.name).replaceAll('\\', '/');
       unique.set(`${relativePath}:${file.size}:${file.lastModified}`, { file, relativePath });
     }
-    const files = [...unique.values()];
+    const files = [...unique.values()].filter((item) => !isIgnoredSystemFile(item.relativePath));
     if (!files.length) return showSelection('error', 'No files were selected.');
     if (files.length > maxBatchFiles) {
       return showSelection('error', `Select no more than ${maxBatchFiles} files.`);
@@ -48,7 +56,7 @@
     for (const item of files) {
       const extension = `.${item.file.name.split('.').pop().toLowerCase()}`;
       if (!allowedExtensions.includes(extension)) {
-        return showSelection('error', `Unsupported file: ${item.relativePath}. Supported files: ${allowedExtensions.join(', ')}.`);
+        return showSelection('error', `Unsupported file: ${item.relativePath}. Supported files: ${formatExtensions(allowedExtensions)}.`);
       }
       if (!item.file.size) return showSelection('error', `Empty file: ${item.relativePath}.`);
       if (item.file.size > maxFileSize) {
@@ -315,7 +323,7 @@
     allowedExtensions = capabilities.supported_extensions;
     fileInput.accept = allowedExtensions.join(',');
     folderInput.accept = allowedExtensions.join(',');
-    setText('supportedFilesText', `Supported files: ${allowedExtensions.join(' and ')} · up to ${maxBatchFiles} files · ${formatSize(maxFileSize)} per file`);
+    setText('supportedFilesText', `Supported files: ${formatExtensions(allowedExtensions)} · up to ${maxBatchFiles} files · ${formatSize(maxFileSize)} per file`);
     if (selectedFiles.length && !activeRequest) selectFiles(selectedFiles);
   }).catch(() => { /* The server also validates each upload. */ });
 })();
