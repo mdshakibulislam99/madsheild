@@ -6,7 +6,8 @@
             "type": "debugpy",
             "request": "launch",
             "module": "uvicorn",
-            "cwd": "${workspaceFolder}\\madsheild\\backend",
+            "cwd": "${workspaceFolder}/madsheild/backend",
+            "python": "${workspaceFolder}/madsheild/backend/.venv/bin/python",
             "args": [
                 "main:app",
                 "--reload",
@@ -16,18 +17,6 @@
                 "8001"
             ],
             "jinja": true
-        },
-        {
-            "name": "Django: Debug",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}\\manage.py",
-            "args": [
-                "runserver",
-                "127.0.0.1:8000",
-                "--noreload"
-            ],
-            "django": true
         }
     ],
     "compounds": [

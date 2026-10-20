@@ -7,30 +7,11 @@
   <link rel="stylesheet" href="assets/css/theme.css">
 </head>
 <body>
-  <nav class="navbar" aria-label="Main navigation">
-    <a class="logo" href="#"><img src="assets/images/logo_2.png" alt="MadSheild" class="brand-logo"></a>
-    <ul class="nav-links">
-      <li><a href="#scan" id="scanNav" class="active">Scan</a></li>
-      <li><a href="#history" id="historyNav">History</a></li>
-      <li><a href="#">About us</a></li>
-    </ul>
-    <div class="auth-btns"><a href="#" class="btn btn-text">Register</a><a href="#" class="btn btn-primary">Log in</a></div>
-  </nav>
+  <div id="shared-header"></div>
+  <script src="assets/js/header-loader.js"></script>
 
   <main>
-    <section id="historySection" class="dashboard-wrapper" hidden>
-      <h2 class="dashboard-title">Scan history</h2>
-      <button id="refreshHistory" class="btn btn-text" type="button">Refresh</button>
-      <p id="historyStatus" role="status"></p>
-      <div style="overflow-x:auto"><table style="width:100%;text-align:left;border-collapse:collapse">
-        <thead><tr><th>File</th><th>Scanned</th><th>Verdict</th><th>Risk score</th><th>Report</th></tr></thead>
-        <tbody id="historyRows"></tbody>
-      </table></div>
-      <div class="result-actions">
-        <button id="historyPrevious" class="btn btn-text" type="button">Previous</button>
-        <button id="historyNext" class="btn btn-text" type="button">Next</button>
-      </div>
-    </section>
+
     <section id="heroSection" class="hero-wrapper">
       <div class="hero-container">
         <h1 class="hero-title">Welcome to MadSheild</h1>
@@ -118,5 +99,6 @@
   </div>
   <script src="assets/js/api-client.js"></script>
   <script src="assets/js/app.js"></script>
+  <script src="assets/js/auth.js"></script>
 </body>
 </html>

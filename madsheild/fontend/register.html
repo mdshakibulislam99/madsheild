@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create account — MadSheild</title>
+  <meta name="description" content="Create a MadSheild account to save scan history and reports.">
+  <link rel="stylesheet" href="assets/css/theme.css">
+  <link rel="stylesheet" href="assets/css/auth.css">
+</head>
+<body>
+  <div id="shared-header"></div>
+
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-header">
+        <a href="/" class="brand">
+          <img src="assets/images/logo_2.png" alt="MadSheild">
+          <span>MadSheild</span>
+        </a>
+        <h1>Create account</h1>
+        <p>Join MadSheild to keep your scan history and reports in one place.</p>
+      </div>
+
+      <div id="authAlert" class="auth-alert"></div>
+
+      <form id="registerForm" class="auth-form" novalidate>
+        <div class="auth-field">
+          <label for="regId">ID</label>
+          <input type="text" id="regId" name="identifier" placeholder="Choose any ID" required autocomplete="username">
+        </div>
+        <div class="auth-field">
+          <label for="regPassword">Password</label>
+          <input type="password" id="regPassword" name="password" placeholder="••••••••" required autocomplete="new-password" minlength="6">
+        </div>
+        <div class="auth-field">
+          <label for="regConfirm">Confirm password</label>
+          <input type="password" id="regConfirm" placeholder="••••••••" required autocomplete="new-password">
+        </div>
+        <button type="submit" id="regSubmit" class="auth-submit">Create account</button>
+      </form>
+
+      <div class="auth-footer">
+        Already have an account? <a href="/login.html">Sign in</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/header-loader.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      const form = document.getElementById('registerForm');
+      const alertEl = document.getElementById('authAlert');
+      const submit = document.getElementById('regSubmit');
+      const passwordInput = document.getElementById('regPassword');
+      const confirmInput = document.getElementById('regConfirm');
+
+      function showAlert(message) {
+        alertEl.textContent = message;
+        alertEl.classList.add('visible');
+      }
+      function hideAlert() {
+        alertEl.classList.remove('visible');
+      }
+
+      // Real-time password match check
+      confirmInput.addEventListener('input', () => {
+        if (passwordInput.value !== confirmInput.value) {
+          confirmInput.setCustomValidity('Passwords do not match.');
+        } else {
+          confirmInput.setCustomValidity('');
+        }
+      });
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        hideAlert();
+        const identifier = document.getElementById('regId').value.trim();
+        const password = passwordInput.value;
+        const confirm = confirmInput.value;
+
+        if (!identifier || !password || !confirm) {
+          showAlert('Please fill in all fields.');
+          return;
+        }
+        if (password !== confirm) {
+          showAlert('Passwords do not match.');
+          return;
+        }
+        if (password.length < 6) {
+          showAlert('Password must be at least 6 characters.');
+          return;
+        }
+
+        submit.disabled = true;
+        submit.textContent = 'Creating account…';
+        try {
+          await MadSheildAuth.register(identifier, password);
+          window.location.href = '/scan.html';
+        } catch (error) {
+          const message = error && error.message
+            ? error.message
+            : 'Unable to create account. Please try again.';
+          showAlert(message);
+        } finally {
+          submit.disabled = false;
+          submit.textContent = 'Create account';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

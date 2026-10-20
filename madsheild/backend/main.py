@@ -1,4 +1,4 @@
-"""Keep the existing run.py launcher pointing at the modular application."""
+"""Uvicorn entry point (main:app) used by the run launcher."""
 
 from .app.main import app
 
