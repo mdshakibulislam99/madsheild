@@ -1,6 +1,6 @@
 # MadShield backend
 
-See [application setup and tests](../README.md). The application lives in `app/main.py`; `backend/main.py` preserves compatibility with the existing root-level `run.py` launcher. Both the frontend and API run on port 8001.
+See [application setup and tests](../README.md). The application lives in `app/main.py`; `backend/main.py` is the uvicorn entry point (`main:app`) used by the `run` launcher. Both the frontend and API run on port 8001.
 
 ## Analysis and efficiency
 
@@ -63,7 +63,7 @@ From the repository root on macOS/Linux:
 
 ```sh
 export MODEL_PATH="$PWD/madsheild/backend/app/ai/weights/team-model.json"
-madsheild/backend/.venv/bin/python run.py
+cd madsheild/backend && .venv/bin/python -m uvicorn main:app --reload --port 8001
 ```
 
 On Windows, set `$env:MODEL_PATH` to the absolute artifact path, then use the virtual environment's Python launcher. A local classifier predicts for the whole document and cannot identify a particular malicious line.

@@ -4,14 +4,40 @@ A local document security analyzer with a FastAPI backend and an HTML/JavaScript
 
 ## Start locally
 
-Run these commands from the repository root: the directory containing both `run.py` and `madsheild/`.
+### With the `run` command (recommended)
+
+Install the launcher once, then start the app with a single command:
+
+```sh
+python3 run setup    # installs 'run' into a directory on your PATH
+run install          # creates the virtual environment and installs dependencies
+run dev              # starts the server with automatic reloading
+```
+
+`run dev` serves the application on [http://127.0.0.1:8001/](http://127.0.0.1:8001/) and restarts the server whenever a backend file changes. Keep the terminal open and press `Ctrl+C` to stop it.
+
+| Command | Purpose |
+| --- | --- |
+| `run dev` | Start the development server with automatic reloading |
+| `run start` | Start the server without automatic reloading |
+| `run test` | Run the backend test suite |
+| `run install` | Create the virtual environment and install the backend requirements |
+| `run setup` | Install the `run` launcher into a directory on your PATH |
+| `run open` | Open the running application in the default browser |
+| `run info` | Show the resolved paths and environment details |
+
+`--host` and `--port` are accepted by every command, for example `run dev --port 9000`.
+
+### Without the `run` command
+
+Run these commands from the repository root: the directory containing `run` and `madsheild/`.
 
 macOS / Linux:
 
 ```sh
 python3 -m venv madsheild/backend/.venv
 madsheild/backend/.venv/bin/python -m pip install -r madsheild/backend/requirements.txt
-madsheild/backend/.venv/bin/python run.py
+cd madsheild/backend && .venv/bin/python -m uvicorn main:app --reload --port 8001
 ```
 
 Windows PowerShell:
@@ -19,7 +45,7 @@ Windows PowerShell:
 ```powershell
 py -m venv madsheild/backend/.venv
 .\madsheild\backend\.venv\Scripts\python.exe -m pip install -r madsheild/backend/requirements.txt
-.\madsheild\backend\.venv\Scripts\python.exe run.py
+cd madsheild/backend; ..\..\madsheild\backend\.venv\Scripts\python.exe -m uvicorn main:app --reload --port 8001
 ```
 
 Keep the terminal open. Visit [the application](http://127.0.0.1:8001/), [API documentation](http://127.0.0.1:8001/docs), or [health check](http://127.0.0.1:8001/health). A separate frontend server is unnecessary.
@@ -67,6 +93,12 @@ Reports include metadata, SHA-256, a verdict (`suspicious`, `review_required`, o
 From the repository root:
 
 ```sh
+run test
+```
+
+Or without the `run` command:
+
+```sh
 madsheild/backend/.venv/bin/python -m unittest discover -s madsheild/backend/tests -p 'test_*.py' -v
 ```
 
@@ -76,8 +108,9 @@ On Windows, use `.\madsheild\backend\.venv\Scripts\python.exe` instead. Tests co
 
 ```text
 repository root/
-├── run.py
+├── run                            # Launcher installed on PATH as 'run'
 ├── madsheild/
+│   ├── cli.py                     # Command line interface behind 'run'
 │   ├── backend/
 │   │   ├── main.py                 # Compatibility entry point
 │   │   ├── app/
@@ -105,7 +138,7 @@ repository root/
 │   └── fontend/                    # Existing directory spelling retained
 │       ├── index.html
 │       └── assets/
-└── core/                          # Legacy Django scaffold, unused by run.py
+└── core/                          # Legacy Django scaffold, unused by the run launcher
 ```
 
 Python package directories also contain `__init__.py`. Login, registration, navigation history, and API-access pages are outside this implementation stage; existing navigation placeholders remain. Retrieving an individual report does not implement a user history page.

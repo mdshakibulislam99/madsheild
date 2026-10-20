@@ -3,48 +3,23 @@
     "tasks": [
         {
             "label": "Python: Create virtual environment",
-            "type": "process",
-            "command": "py",
-            "args": [
-                "-m",
-                "venv",
-                "${workspaceFolder}\\.venv"
-            ],
-            "windows": {
-                "command": "py"
-            },
+            "type": "shell",
+            "command": "python3 -m venv \"${workspaceFolder}/madsheild/backend/.venv\"",
             "problemMatcher": []
         },
         {
             "label": "Python: Install backend dependencies",
-            "type": "process",
-            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
-            "args": [
-                "-m",
-                "pip",
-                "install",
-                "-r",
-                "${workspaceFolder}\\madsheild\\backend\\requirements.txt"
-            ],
+            "type": "shell",
+            "command": "\"${workspaceFolder}/madsheild/backend/.venv/bin/python\" -m pip install -r \"${workspaceFolder}/madsheild/backend/requirements.txt\"",
             "dependsOn": "Python: Create virtual environment",
             "problemMatcher": []
         },
         {
             "label": "Backend: Start FastAPI",
-            "type": "process",
-            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
-            "args": [
-                "-m",
-                "uvicorn",
-                "main:app",
-                "--reload",
-                "--host",
-                "127.0.0.1",
-                "--port",
-                "8001"
-            ],
+            "type": "shell",
+            "command": "\"${workspaceFolder}/madsheild/backend/.venv/bin/python\" -m uvicorn main:app --reload --host 127.0.0.1 --port 8001",
             "options": {
-                "cwd":                 "${workspaceFolder}\\madsheild\\backend"
+                "cwd": "${workspaceFolder}/madsheild/backend"
             },
             "problemMatcher": [],
             "isBackground": true,
@@ -53,22 +28,6 @@
                 "panel": "dedicated"
             },
             "dependsOn": "Python: Install backend dependencies"
-        },
-        {
-            "label": "Backend: Start Django",
-            "type": "process",
-            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
-            "args": [
-                "${workspaceFolder}\\manage.py",
-                "runserver",
-                "127.0.0.1:8000"
-            ],
-            "problemMatcher": [],
-            "isBackground": true,
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated"
-            }
         },
         {
             "label": "MadSheild: Start development services",

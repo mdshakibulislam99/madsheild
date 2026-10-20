@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log in — MadSheild</title>
+  <meta name="description" content="Sign in to your MadSheild account to save scan history and reports.">
+  <link rel="stylesheet" href="assets/css/theme.css">
+  <link rel="stylesheet" href="assets/css/auth.css">
+</head>
+<body>
+  <div id="shared-header"></div>
+
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-header">
+        <a href="/" class="brand">
+          <img src="assets/images/logo_2.png" alt="MadSheild">
+          <span>MadSheild</span>
+        </a>
+        <h1>Welcome back</h1>
+        <p>Sign in to access your scan history and saved reports.</p>
+      </div>
+
+      <div id="authAlert" class="auth-alert"></div>
+
+      <form id="loginForm" class="auth-form" novalidate>
+        <div class="auth-field">
+          <label for="loginId">ID</label>
+          <input type="text" id="loginId" name="identifier" placeholder="Enter your ID" required autocomplete="username">
+        </div>
+        <div class="auth-field">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" name="password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" id="loginSubmit" class="auth-submit">Log in</button>
+      </form>
+
+      <div class="auth-footer">
+        Don't have an account? <a href="/register.html">Create one</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/header-loader.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      const form = document.getElementById('loginForm');
+      const alertEl = document.getElementById('authAlert');
+      const submit = document.getElementById('loginSubmit');
+
+      function showAlert(message) {
+        alertEl.textContent = message;
+        alertEl.classList.add('visible');
+      }
+      function hideAlert() {
+        alertEl.classList.remove('visible');
+      }
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        hideAlert();
+        const identifier = document.getElementById('loginId').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        if (!identifier || !password) {
+          showAlert('Please enter both ID and password.');
+          return;
+        }
+        submit.disabled = true;
+        submit.textContent = 'Signing in…';
+        try {
+          await MadSheildAuth.login(identifier, password);
+          const redirect = localStorage.getItem('madshield_redirect') || '/scan.html';
+          localStorage.removeItem('madshield_redirect');
+          window.location.href = redirect;
+        } catch (error) {
+          const message = error && error.message
+            ? error.message
+            : 'Unable to sign in. Please try again.';
+          showAlert(message);
+        } finally {
+          submit.disabled = false;
+          submit.textContent = 'Log in';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

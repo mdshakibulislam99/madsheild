@@ -6,3 +6,7 @@ httpx>=0.28,<1
 olefile>=0.47,<1
 pefile>=2024.8.26,<2026
 pypdf>=5,<7
+python-jose[cryptography]>=3.3,<5
+passlib[bcrypt]>=1.7,<2
+email-validator>=2.2,<3
+bcrypt>=3.1,<4
