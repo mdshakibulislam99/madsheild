@@ -72,7 +72,7 @@
         submit.textContent = 'Signing in…';
         try {
           await MadSheildAuth.login(identifier, password);
-          const redirect = localStorage.getItem('madshield_redirect') || '/scan.html';
+          const redirect = localStorage.getItem('madshield_redirect') || '/';
           localStorage.removeItem('madshield_redirect');
           window.location.href = redirect;
         } catch (error) {
